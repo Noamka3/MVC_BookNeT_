@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+ <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <!-- Diagram content (shape and connector positions) -->
+    <edmx:Diagrams>
+      <Diagram DiagramId="ef2f7bcffbf64983ae60fd422ec1e088" Name="Diagram1" ZoomLevel="78">
+        <EntityTypeShape EntityType="BookNeT_projectModel.BookFeedback" Width="1.5" PointX="3" PointY="11.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="BookNeT_projectModel.Books" Width="1.5" PointX="0.75" PointY="4.125" IsExpanded="true" />
+        <EntityTypeShape EntityType="BookNeT_projectModel.Borrowing" Width="1.5" PointX="6" PointY="11.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="BookNeT_projectModel.Purchases" Width="1.5" PointX="3" PointY="7.875" IsExpanded="true" />
+        <EntityTypeShape EntityType="BookNeT_projectModel.ServiceFeedback" Width="1.5" PointX="3" PointY="21.625" IsExpanded="true" />
+        <EntityTypeShape EntityType="BookNeT_projectModel.ShoppingCart" Width="1.5" PointX="3" PointY="15.625" IsExpanded="true" />
+        <EntityTypeShape EntityType="BookNeT_projectModel.Users" Width="1.5" PointX="0.75" PointY="10.875" IsExpanded="true" />
+        <EntityTypeShape EntityType="BookNeT_projectModel.WaitingList" Width="1.5" PointX="6" PointY="15.875" IsExpanded="true" />
+        <AssociationConnector Association="BookNeT_projectModel.FK__BookFeedb__BookI__0E6E26BF" ManuallyRouted="false" />
+        <AssociationConnector Association="BookNeT_projectModel.FK__BookFeedb__UserI__0C85DE4D" ManuallyRouted="false" />
+        <AssociationConnector Association="BookNeT_projectModel.FK__Borrowing__BookI__778AC167" ManuallyRouted="false" />
+        <AssociationConnector Association="BookNeT_projectModel.FK__Purchases__BookI__797309D9" ManuallyRouted="false" />
+        <AssociationConnector Association="BookNeT_projectModel.FK__ShoppingC__BookI__7C4F7684" ManuallyRouted="false" />
+        <AssociationConnector Association="BookNeT_projectModel.FK__WaitingLi__BookI__7F2BE32F" ManuallyRouted="false" />
+        <AssociationConnector Association="BookNeT_projectModel.FK__Borrowing__UserI__76969D2E" ManuallyRouted="false" />
+        <AssociationConnector Association="BookNeT_projectModel.FK__Purchases__UserI__787EE5A0" ManuallyRouted="false" />
+        <AssociationConnector Association="BookNeT_projectModel.FK__ServiceFe__UserI__7A672E12" ManuallyRouted="false" />
+        <AssociationConnector Association="BookNeT_projectModel.FK__ShoppingC__UserI__7B5B524B" ManuallyRouted="false" />
+        <AssociationConnector Association="BookNeT_projectModel.FK__WaitingLi__UserI__00200768" ManuallyRouted="false" />
+        <EntityTypeShape EntityType="BookNeT_projectModel.UserBookHistory" Width="1.5" PointX="3" PointY="4.625" />
+        <EntityTypeShape EntityType="BookNeT_projectModel.UserFavoriteBooks" Width="1.5" PointX="6" PointY="3.75" />
+        <AssociationConnector Association="BookNeT_projectModel.FK_UserBookHistory_Books" />
+        <AssociationConnector Association="BookNeT_projectModel.FK_UserFavoriteBooks_Books" />
+        <AssociationConnector Association="BookNeT_projectModel.FK_UserBookHistory_Users" />
+        <AssociationConnector Association="BookNeT_projectModel.FK_UserFavoriteBooks_Users" />
+      </Diagram>
+    </edmx:Diagrams>
+  </edmx:Designer>
+</edmx:Edmx>

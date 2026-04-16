@@ -1,0 +1,48 @@
+﻿@model _BookNeT_.Models.viewModels.VerifyEmailModel
+
+@{
+    ViewBag.Title = "VerifyEmail";
+    <link rel="stylesheet" href="~/css/Account.css" />
+}
+
+<div class="account-container">
+    <div class="account-box">
+        <h2 class="text-center mb-4">VerifyEmail</h2>
+
+        @using (Html.BeginForm("VerifyEmail", "Account", FormMethod.Post))
+        {
+            <div>
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+            </div>
+
+            <div class="mb-3">
+                <label for="Email" class="form-label">@Html.LabelFor(m => m.Email)</label>
+                @Html.TextBoxFor(m => m.Email, new { @class = "form-control", style = "background-color: #f3f2ec;" })
+                @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger" })
+            </div>
+
+
+            <input type="submit" value="Send" class="btn btn-primary w-100 p-2" />
+
+
+            <div class="text-center">
+                <a href="javascript:
+                   if (window.history.length>
+                    1) {
+                    window.history.back();
+                    } else {
+                    window.location.href = '/Home/Index';
+                    }"
+                    class="text-decoration-none mt-3">
+                    back
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+}
+

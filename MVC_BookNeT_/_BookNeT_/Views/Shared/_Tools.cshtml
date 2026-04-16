@@ -1,0 +1,185 @@
+@{
+    ViewBag.Title = ViewBag.Title ?? "My Application";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- טוען את האייקונים של Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- הטעינה של קובצי ה-CSS של Bootstrap -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/ToolsProfile/Tools.css" />
+    <!-- הקובץ שלך -->
+</head>
+
+
+<body>
+<!-- Profile Layout Wrapper -->
+<div class="profile-layout">
+    <!-- Sidebar בצד ימין -->
+    <div class="sidebar">
+        <ul class="nav nav-pills flex-column mt-0">
+            <li class="nav-item mb-2">
+                <a class="nav-link @(ViewContext.RouteData.Values["action"].ToString() == "Details" ? "active" : "")" href="@Url.Action("Details", "Profile")">
+                    <i class="bi bi-person-circle"></i> User details
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link @(ViewContext.RouteData.Values["action"].ToString() == "PurchasedBooks" ? "active" : "")" href="@Url.Action("PurchasedBooks", "Profile")">
+                    <i class="bi bi-bag-check"></i> Books I Bought
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link @(ViewContext.RouteData.Values["action"].ToString() == "BorrowingBooks" ? "active" : "")" href="@Url.Action("BorrowingBooks", "Profile")">
+                    <i class="bi bi-book-half"></i> Books I Borrowed
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link @(ViewContext.RouteData.Values["action"].ToString() == "FavoriteBooks" ? "active" : "")" href="@Url.Action("FavoriteBooks", "Profile")">
+                    <i class="bi bi-heart-fill"></i> Books I Like
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link @(ViewContext.RouteData.Values["action"].ToString() == "BookHistory" ? "active" : "")" href="@Url.Action("BookHistory", "Profile")">
+                    <i class="bi bi-clock-history"></i> Book History
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link @(ViewContext.RouteData.Values["action"].ToString() == "Support" ? "active" : "")" href="@Url.Action("Support", "Profile")">
+                    <i class="bi bi-gear"></i> Support
+                </a>
+            </li>
+        </ul>
+    </div>
+    <!-- תוכן מרכזי -->
+    <div class="main-content">
+        @RenderBody()
+    </div>
+</div>
+
+<!-- טעינת ה-JavaScript של Bootstrap -->
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.min.js"></script>
+</body>
+</html>
+
+<style>
+    /* =========================================================
+       PREMIUM PROFILE LAYOUT (SIDEBAR & MAIN CONTENT)
+       ========================================================= */
+    :root {
+        --profile-primary: #00B4D8;
+        --profile-bg: #f3f2ec;
+        --sidebar-bg: #ffffff;
+        --text-dark: #1a1a2e;
+        --text-muted: #6c757d;
+    }
+
+    body {
+        background-color: var(--profile-bg);
+        margin: 0;
+        padding-top: 85px; /* Leave room for Layout navbar */
+        font-family: 'Inter', sans-serif;
+    }
+
+    /* Layout wrapper */
+    .profile-layout {
+        display: flex;
+        align-items: flex-start;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem;
+        gap: 2.5rem;
+    }
+
+    /* Sidebar */
+    .sidebar {
+        width: 280px;
+        flex-shrink: 0;
+        background: var(--sidebar-bg);
+        border-radius: 20px;
+        padding: 2rem 1.5rem;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+        position: sticky;
+        top: 105px; /* Stick below navbar */
+    }
+
+    .sidebar .nav-pills .nav-item {
+        margin-bottom: 0.5rem;
+    }
+
+    .sidebar .nav-pills .nav-link {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        color: var(--text-dark);
+        font-weight: 500;
+        font-size: 0.95rem;
+        padding: 0.85rem 1.25rem;
+        border-radius: 12px;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    
+    .sidebar .nav-pills .nav-link i {
+        font-size: 1.2rem;
+        color: var(--text-muted);
+        transition: color 0.3s ease;
+    }
+
+    /* Hover & Active States */
+    .sidebar .nav-pills .nav-link:hover {
+        background: rgba(0, 180, 216, 0.08);
+        color: var(--profile-primary);
+        transform: translateX(4px);
+    }
+    .sidebar .nav-pills .nav-link:hover i {
+        color: var(--profile-primary);
+    }
+
+    .sidebar .nav-pills .nav-link.active {
+        background: var(--profile-primary);
+        color: #fff;
+        box-shadow: 0 4px 15px rgba(0, 180, 216, 0.3);
+    }
+    .sidebar .nav-pills .nav-link.active i {
+        color: #fff;
+    }
+
+    /* Main Content Area with SPA-like transition */
+    @@keyframes fadeInSlideUp {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .main-content {
+        flex-grow: 1;
+        min-width: 0; /* Prevent flex overflow */
+        animation: fadeInSlideUp 0.5s ease-out forwards;
+    }
+
+    /* Responsive */
+    @@media (max-width: 992px) {
+        .profile-layout {
+            flex-direction: column;
+            padding: 1rem;
+        }
+        .sidebar {
+            width: 100%;
+            position: relative;
+            top: 0;
+            padding: 1rem;
+            border-radius: 16px;
+        }
+    }
+</style>

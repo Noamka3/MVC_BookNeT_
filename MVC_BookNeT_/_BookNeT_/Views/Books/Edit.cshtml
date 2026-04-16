@@ -1,0 +1,380 @@
+﻿@model _BookNeT_.Models.Books
+
+<div class="container mt-0 d-flex justify-content-center"> 
+    <div class="shadow p-4 rounded" style="background-color: #f3f2ec; max-width: 800px; width: 100%;">
+        <h2 class="text-center mb-4" style="color: black;">Edit Book</h2>
+        <form method="post" action="/Books/Edit/@Model.BookID">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="BookID" value="@Model.BookID" />
+
+            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+            
+            <!-- Book's Name -->
+            <div class="mb-3">
+                <label class="form-label">Book's Name *</label>
+                <input type="text" name="Title" class="form-control" required value="@Model.Title" placeholder="Enter the book's name" />
+            </div>
+
+            <!-- Author's Name -->
+            <div class="mb-3">
+                <label class="form-label">Author's Name *</label>
+                <input type="text" name="Author" class="form-control" required value="@Model.Author" placeholder="Enter the author's name" />
+            </div>
+
+            <!-- Publisher -->
+            <div class="mb-3">
+                <label class="form-label">Publisher *</label>
+                <input type="text" name="Publisher" class="form-control" required value="@Model.Publisher" placeholder="Enter the publisher's name" />
+            </div>
+
+            <!-- Year of Publication -->
+            <div class="mb-3">
+                <label class="form-label">Year Of Publication</label>
+                <input type="number" name="YearOfPublication" class="form-control" min="1900" max="2024" value="@Model.YearOfPublication" placeholder="Enter year" />
+            </div>
+
+            <!-- Image URL -->
+            <div class="mb-3">
+                <label class="form-label">Image URL</label>
+                <input type="url" name="ImageUrl" class="form-control" value="@Model.ImageUrl" placeholder="Enter image URL" />
+            </div>
+
+            <!-- Formats -->
+            <div class="mb-3">
+                <label class="form-label">Formats *</label>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="SelectedFormats" value="PDF" @(Model.Formats?.Contains("PDF") == true ? "checked" : "") id="formatPDF" />
+                    <label class="form-check-label" for="formatPDF">PDF</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="SelectedFormats" value="MOBI" @(Model.Formats?.Contains("MOBI") == true ? "checked" : "") id="formatMOBI" />
+                    <label class="form-check-label" for="formatMOBI">MOBI</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="SelectedFormats" value="EPUB" @(Model.Formats?.Contains("EPUB") == true ? "checked" : "") id="formatEPUB" />
+                    <label class="form-check-label" for="formatEPUB">EPUB</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="SelectedFormats" value="F2B"
+                           @(Model.Formats?.Contains("F2B") == true ? "checked" : "") id="formatF2B" />
+                    <label class="form-check-label" for="formatF2B">F2B</label>
+                </div>
+            </div>
+
+            <!-- Genre -->
+            <div class="mb-3">
+                <label class="form-label">Genre *</label>
+                <select name="Genre" class="form-select" required>
+                    <option value="Fiction" @(Model.Genre == "Fiction" ? "selected" : "")>Fiction</option>
+                    <option value="Non-Fiction" @(Model.Genre == "Non-Fiction" ? "selected" : "")>Non-Fiction</option>
+                    <option value="Science Fiction" @(Model.Genre == "Science Fiction" ? "selected" : "")>Science Fiction</option>
+                    <option value="Fantasy" @(Model.Genre == "Fantasy" ? "selected" : "")>Fantasy</option>
+                    <option value="Mystery" @(Model.Genre == "Mystery" ? "selected" : "")>Mystery</option>
+                    <option value="Biography" @(Model.Genre == "Biography" ? "selected" : "")>Biography</option>
+                    <option value="History" @(Model.Genre == "History" ? "selected" : "")>History</option>
+                    <option value="Self-Help" @(Model.Genre == "Self-Help" ? "selected" : "")>Self-Help</option>
+                </select>
+            </div>
+
+            <!-- Age Category -->
+            <div class="mb-3">
+                <label class="form-label">Age Category *</label>
+                <select name="AgeRestriction" class="form-select" required>
+                    <option value="0" @(Model.AgeRestriction == 0 ? "selected" : "")>All Ages</option>
+                    <option value="3" @(Model.AgeRestriction == 3 ? "selected" : "")>Toddlers (0-3)</option>
+                    <option value="5" @(Model.AgeRestriction == 5 ? "selected" : "")>Preschool (4-5)</option>
+                    <option value="7" @(Model.AgeRestriction == 7 ? "selected" : "")>Early Readers (6-7)</option>
+                    <option value="12" @(Model.AgeRestriction == 12 ? "selected" : "")>Children (8-12)</option>
+                    <option value="14" @(Model.AgeRestriction == 14 ? "selected" : "")>Young Teen (12-14)</option>
+                    <option value="17" @(Model.AgeRestriction == 17 ? "selected" : "")>Teen & Young Adult (13-17)</option>
+                    <option value="18" @(Model.AgeRestriction == 18 ? "selected" : "")>Adult (18+)</option>
+                </select>
+            </div>
+
+
+            <!-- Purchase Price -->
+            <div class="mb-3">
+                <label class="form-label">Purchase Price *</label>
+                <input type="number" name="PurchasePrice" class="form-control" required min="0" step="0.01" value="@Model.PurchasePrice" placeholder="Enter purchase price" />
+            </div>
+
+            <!-- Borrow Price -->
+            <div class="mb-3">
+                <label class="form-label">Borrow Price</label>
+                <input type="number" name="BorrowPrice" class="form-control" min="0" step="0.01" value="@Model.BorrowPrice" placeholder="Enter borrow price" />
+            </div>
+
+            <!-- Number of Copies -->
+            <div class="mb-3">
+                <label class="form-label">Number of Copies *</label>
+                <input type="number" name="Stock" class="form-control" required min="0" value="@Model.Stock" placeholder="Enter stock" />
+            </div>
+
+            <!-- Is Borrowable -->
+            <div class="mb-3">
+                <label class="form-label">Is Borrowable *</label>
+                <select name="IsBorrowable" class="form-select" required>
+                    <option value="true" @(Model.IsBorrowable == true ? "selected" : "")>Yes</option>
+                    <option value="false" @(Model.IsBorrowable == false ? "selected" : "")>No</option>
+                </select>
+            </div>
+
+            <!-- Is Discounted -->
+            <div class="mb-3">
+                <label class="form-label">Is Discounted *</label>
+                <select name="IsDiscounted" class="form-select" required>
+                    <option value="true" @(Model.IsDiscounted == true ? "selected" : "")>Yes</option>
+                    <option value="false" @(Model.IsDiscounted == false ? "selected" : "")>No</option>
+                </select>
+            </div>
+
+            <!-- Discount Percentage -->
+            <div class="mb-3">
+                <label class="form-label">Discount Percentage</label>
+                <input type="number" name="DiscountPercentage" class="form-control" min="0" max="100" step="0.01" value="@Model.DiscountPercentage" placeholder="Enter discount percentage" />
+            </div>
+
+            <!-- Discount End Date -->
+            <div class="mb-3">
+                <label class="form-label">Discount End Date</label>
+                <input type="date" name="DiscountEndDate" class="form-control"
+                       min="@DateTime.Today.ToString("yyyy-MM-dd")"
+                       max="@DateTime.Today.AddDays(7).ToString("yyyy-MM-dd")"
+                       value="@(Model.DiscountEndDate?.ToString("yyyy-MM-dd"))" />
+            </div>
+
+            <div class="form-group">
+                <label>Status *</label>
+                <select id="statusField" name="Status" class="form-control" required>
+                    <option value="Available" @(Model.Status == "Available" ? "selected" : "")>Available</option>
+                    <option value="Out of Stock" @(Model.Status == "Out of Stock" ? "selected" : "")>Out of Stock</option>
+                    <option value="Coming Soon" @(Model.Status == "Coming Soon" ? "selected" : "")>Coming Soon</option>
+                </select>
+            </div>
+
+            <!-- Description -->
+            <div class="mb-3">
+                <label class="form-label">Description</label>
+                <textarea name="Description" class="form-control" placeholder="Enter book description">@Model.Description</textarea>
+            </div>
+
+            <!-- Buttons -->
+            <div class="text-center mt-4">
+                <button type="submit" class="btn btn-primary px-4">Save</button>
+                <a href="/Books/Index" class="btn btn-secondary px-4">Back to List</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    /* ביטול רווחים בין ה-NAVBAR לתוכן */
+    body {
+        margin: 0;
+        padding: 0;
+        background-color: #f3f2ec; /* רקע כללי בז' */
+    }
+
+    /* ביטול רווח מיותר אחרי ה-NAVBAR */
+    .container-fluid, .container {
+        margin-top: 0 !important;
+    }
+
+    /* עיצוב ה-NAVBAR */
+    .navbar {
+        background-color: #f3f2ec; /* צבע בז' */
+        border-bottom: 1px solid black; /* קו תחתון עדין */
+    }
+
+    .navbar a, .navbar-brand {
+        color: black; /* טקסט שחור */
+    }
+
+    .navbar a:hover {
+        color: #555; /* טקסט אפור כהה בעת מעבר עכבר */
+    }
+
+    /* עיצוב כותרות */
+    h2, h3, h4, h5, h6 {
+        color: black; /* טקסט שחור */
+        margin-top: 0;
+    }
+
+    /* טפסים */
+    .form-control, .form-select {
+        background-color: #f3f2ec; /* רקע בז' */
+        color: black; /* טקסט שחור */
+        border: 1px solid #ccc; /* גבול אפור בהיר */
+        z-index: 1000; 
+    }
+
+    .form-control::placeholder {
+        color: #aaa;
+    }
+
+    /* עיצוב טבלאות */
+    .table {
+        background-color: #f3f2ec; /* רקע בז' */
+        color: black; /* טקסט שחור */
+    }
+
+    .table th, .table td {
+        border-color: black; /* גבולות שחורים */
+    }
+
+    /* עיצוב כפתורים */
+    .btn {
+        background-color: #f3f2ec; /* רקע בז' */
+        color: black; /* טקסט שחור */
+        border: 1px solid black; /* גבול שחור */
+    }
+
+    .btn:hover {
+        background-color: #ddd; /* רקע אפור בהיר בעת מעבר עכבר */
+        color: black;
+    }
+
+    /* קונטיינרים ותיבות תוכן */
+    .container, .shadow {
+        background-color: #f3f2ec; /* רקע בז' */
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    /* תיבות טקסט */
+    textarea {
+        background-color: #f3f2ec;
+        color: black;
+        border: 1px solid #ccc;
+    }
+    .custom-bg {
+        background-color: #f3f2ec; /* צבע בז' */
+    }
+</style>
+<script>
+    function updateStatus() {
+        const stockValue = parseInt(document.querySelector('input[name="Stock"]').value);
+        const statusField = document.getElementById('statusField');
+
+        // מעדכן את האפשרויות הזמינות
+        const availableOption = statusField.querySelector('option[value="Available"]');
+        const outOfStockOption = statusField.querySelector('option[value="Out of Stock"]');
+        const comingSoonOption = statusField.querySelector('option[value="Coming Soon"]');
+
+        if (stockValue === 0) {
+            availableOption.disabled = true;     // חוסם Available כשאין מלאי
+            outOfStockOption.disabled = false;
+            comingSoonOption.disabled = false;   // מאפשר Coming Soon רק כשאין עותקים
+            if (statusField.value === "Available") {
+                statusField.value = "Out of Stock";
+            }
+        } else {
+            availableOption.disabled = false;
+            outOfStockOption.disabled = true;    // חוסם Out of Stock כשיש מלאי
+            comingSoonOption.disabled = true;    // חוסם Coming Soon כשיש עותקים
+            if (statusField.value === "Out of Stock" || statusField.value === "Coming Soon") {
+                statusField.value = "Available";
+            }
+        }
+    }
+
+    // מאזינים לשינויים
+    document.querySelector('input[name="Stock"]').addEventListener('change', updateStatus);
+    document.querySelector('select[name="IsBorrowable"]').addEventListener('change', updateStatus);
+
+    // הפעלה ראשונית של הבדיקה
+    updateStatus();
+
+    function toggleDiscountPercentage() {
+        const isDiscounted = document.querySelector('select[name="IsDiscounted"]').value;
+        const discountPercentageField = document.getElementById('discountPercentage');
+
+        // אם בחרו "Yes" לאפשר את השדה, אחרת לחסום אותו
+        if (isDiscounted === "true") {
+            discountPercentageField.disabled = false; // לא לחסום
+        } else {
+            discountPercentageField.disabled = true; // לחסום
+            discountPercentageField.value = ''; // מנקה את הערך אם זה לא פעיל
+        }
+    }
+
+    function setMaxDiscountDate() {
+        const discountEndDateField = document.querySelector('input[name="DiscountEndDate"]');
+        const today = new Date();
+        const maxDate = new Date(today);
+        maxDate.setDate(today.getDate() + 7); // מקסימום שבוע קדימה
+
+        // מגדיר את התאריך המינימלי להיום
+        discountEndDateField.min = today.toISOString().split('T')[0];
+        // מגדיר את התאריך המקסימלי לשבוע מהיום
+        discountEndDateField.max = maxDate.toISOString().split('T')[0];
+
+        // אם השדה ריק, מגדיר את התאריך המקסימלי כברירת מחדל
+        if (!discountEndDateField.value) {
+            discountEndDateField.value = maxDate.toISOString().split('T')[0];
+        }
+    }
+
+    function validateDiscountFields() {
+        const isDiscounted = document.querySelector('select[name="IsDiscounted"]').value === "true";
+        const discountEndDateField = document.querySelector('input[name="DiscountEndDate"]');
+        const discountPercentageField = document.querySelector('input[name="DiscountPercentage"]');
+
+        if (isDiscounted) {
+            // מוודא שהתאריך והאחוזים מוגדרים
+            discountEndDateField.required = true;
+            discountPercentageField.required = true;
+
+            // אם התאריך ריק, מגדיר את התאריך המקסימלי כברירת מחדל
+            if (!discountEndDateField.value) {
+                setMaxDiscountDate();
+            }
+        } else {
+            // איפוס השדות במידה ולא בחרו הנחה
+            discountEndDateField.required = false;
+            discountPercentageField.required = false;
+            discountEndDateField.value = '';
+            discountPercentageField.value = '';
+        }
+    }
+
+    // מאזין לשינוי השדה IsDiscounted
+    document.querySelector('select[name="IsDiscounted"]').addEventListener('change', function() {
+        validateDiscountFields();
+        if (this.value === "true") {
+            setMaxDiscountDate();
+        }
+    });
+
+    // הגדרת הפונקציות בזמן טעינת הדף
+    document.addEventListener('DOMContentLoaded', function() {
+        setMaxDiscountDate();
+        validateDiscountFields();
+        validatePrices();
+    });
+
+    function validatePrices() {
+        const purchasePriceField = document.querySelector('input[name="PurchasePrice"]');
+        const borrowPriceField = document.querySelector('input[name="BorrowPrice"]');
+        const form = document.querySelector('form');
+
+        form.addEventListener('submit', function(event) {
+            const purchasePrice = parseFloat(purchasePriceField.value) || 0;
+            const borrowPrice = parseFloat(borrowPriceField.value) || 0;
+
+            if (borrowPrice > purchasePrice && borrowPrice > 0) {
+                event.preventDefault();
+                alert('Error: Borrow price cannot be higher than the purchase price');
+                return false;
+            }
+
+            if (purchasePrice < borrowPrice && borrowPrice > 0) {
+                event.preventDefault();
+                alert('Error: Purchase price cannot be lower than Borrow price');
+                return false;
+            }
+        });
+    }
+    
+</script>

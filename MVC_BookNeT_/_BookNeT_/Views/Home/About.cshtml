@@ -1,0 +1,254 @@
+@{
+    ViewBag.Title = "About";
+}
+<head>
+    @section scripts {
+        <script src="~/Js/cart.js"></script>
+    }
+</head>
+
+
+@if (Session["Email"] != null)
+{
+    <div class="cart-icon">
+        <a href="@Url.Action("Index", "ShoppingCart")" class="cart-link">
+            <i class="fas fa-shopping-cart"></i>
+            <span class="cart-count">@ViewBag.CartCount</span>
+        </a>
+    </div>
+}
+
+<div class="page-wrapper">
+    <div class="hero-section">
+        <h1 class="display-title">About Us</h1>
+        <p class="display-subtitle">Discover the story and vision behind BookNeT</p>
+    </div>
+
+    <div class="container main-content-box">
+        <div class="row align-items-center mb-5">
+            <div class="col-lg-6 mb-4 mb-lg-0">
+                <div class="about-text-card">
+                    <h2 class="section-heading">Our Mission</h2>
+                    <p class="section-text">
+                        We are a leading technology company specializing in developing innovative solutions for our clients. 
+                        Our team consists of experienced professionals committed to excellence and pushing the boundaries of digital literature.
+                    </p>
+                    <p class="section-text">
+                        We believe in close collaboration with our users to ensure that the platform we provide 
+                        exactly meets their needs, fostering a community of avid readers and passionate writers.
+                    </p>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <!-- Visual placeholder or graphic layout -->
+                <div class="about-graphic">
+                    <div class="graphic-circle">
+                        <i class="bi bi-book-half"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-4 mb-4">
+                <div class="value-card">
+                    <div class="value-icon"><i class="bi bi-lightbulb"></i></div>
+                    <h4>Innovation</h4>
+                    <p>Always staying ahead of the curve to bring you the best reading experience.</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="value-card">
+                    <div class="value-icon"><i class="bi bi-people"></i></div>
+                    <h4>Community</h4>
+                    <p>Building a welcoming space for everyone who loves the magic of words.</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="value-card">
+                    <div class="value-icon"><i class="bi bi-shield-check"></i></div>
+                    <h4>Excellence</h4>
+                    <p>Committed to maintaining the highest standards of quality and service.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* =========================================================
+       PREMIUM ABOUT PAGE DESIGN (Home Page Theme)
+       ========================================================= */
+    body {
+        background-color: #f3f2ec; /* matches var(--cream) */
+        font-family: 'Inter', sans-serif;
+        color: #2d2d2d;
+    }
+
+    .page-wrapper {
+        min-height: 100vh;
+        padding-bottom: 4rem;
+    }
+
+    .hero-section {
+        background: url('../../Images/Home/electronic_book.jpg') center/cover no-repeat;
+        padding: 8rem 2rem 10rem 2rem;
+        text-align: center;
+        color: #fff;
+        position: relative;
+    }
+
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(160deg, rgba(26,26,46,.82) 0%, rgba(0,150,183,.55) 100%);
+        z-index: 1;
+    }
+
+    .display-title, .display-subtitle {
+        position: relative;
+        z-index: 2;
+    }
+
+    .display-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 4rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        text-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    .display-subtitle {
+        font-size: 1.25rem;
+        color: rgba(255,255,255,0.85);
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .main-content-box {
+        margin-top: -6rem;
+        position: relative;
+        z-index: 10;
+    }
+
+    .about-text-card {
+        background: #fff;
+        padding: 3rem;
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.05);
+    }
+
+    .section-heading {
+        font-family: 'Playfair Display', serif;
+        color: #1a1a2e;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        position: relative;
+    }
+
+    .section-heading::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 0;
+        width: 60px;
+        height: 4px;
+        background: #00B4D8;
+        border-radius: 2px;
+    }
+
+    .section-text {
+        color: #555;
+        font-size: 1.1rem;
+        line-height: 1.7;
+        margin-bottom: 1.5rem;
+    }
+
+    .about-graphic {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        padding: 2rem;
+    }
+
+    .graphic-circle {
+        width: 300px;
+        height: 300px;
+        background: linear-gradient(135deg, rgba(0, 180, 216, 0.1) 0%, rgba(0, 180, 216, 0.05) 100%);
+        border: 2px dashed rgba(0, 180, 216, 0.3);
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 8rem;
+        color: #00B4D8;
+        box-shadow: inset 0 0 50px rgba(0, 180, 216, 0.1);
+        animation: float 6s ease-in-out infinite;
+    }
+
+    @@keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-20px); }
+        100% { transform: translateY(0px); }
+    }
+
+    /* Value Cards */
+    .value-card {
+        background: #fff;
+        padding: 2.5rem 2rem;
+        border-radius: 20px;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+        height: 100%;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .value-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+    }
+
+    .value-icon {
+        width: 80px;
+        height: 80px;
+        background: rgba(0, 180, 216, 0.1);
+        color: #00B4D8;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        margin: 0 auto 1.5rem auto;
+    }
+
+    .value-card h4 {
+        color: #1a1a2e;
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
+
+    .value-card p {
+        color: #6c757d;
+        margin: 0;
+    }
+
+    /* Cart FAB Global Fix */
+    .cart-link {
+        position: fixed; bottom: 30px; right: 30px;
+        background: #00B4D8; color: #fff;
+        width: 56px; height: 56px;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.3rem; margin: 0;
+        box-shadow: 0 5px 20px rgba(0, 180, 216, 0.4);
+        z-index: 1000;
+    }
+    .cart-count {
+        position: absolute; top: -5px; right: -5px;
+        background: #e63946; color: #fff; border-radius: 50%;
+        width: 22px; height: 22px; font-size: 0.75rem; font-weight: 700;
+        display: flex; align-items: center; justify-content: center;
+    }
+</style>

@@ -1,0 +1,369 @@
+@model List<_BookNeT_.Models.BookUser.BorrowingBookViewModel>
+
+@{
+    ViewBag.Title = "Borrowing Books";
+    Layout = "~/Views/Shared/_Tools.cshtml";
+}
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Bootstrap Files -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.min.js"></script>
+    <script src="~/Js/cart.js"></script>
+
+</head>
+@if (Session["Email"] != null)
+{
+    <div class="cart-icon">
+        <a href="@Url.Action("Index", "ShoppingCart")" class="cart-link">
+            <i class="fas fa-shopping-cart"></i>
+            <span class="cart-count">@ViewBag.CartCount</span>
+        </a>
+    </div>
+}
+<div class="favorite-container">
+    <div class="favorite-hero" style="background: linear-gradient(135deg, #1a1a2e 0%, #0077b6 100%);">
+        <h1 class="favorite-title">Borrowed Books <i class="fas fa-book-reader text-warning"></i></h1>
+        <p class="favorite-subtitle">Keep track of your active borrowings and due dates.</p>
+    </div>
+
+    <div class="favorite-grid">
+        @if (Model != null && Model.Any())
+        {
+            foreach (var borrowing in Model)
+            {
+                int? daysLeft = (borrowing.DueDate - DateTime.Now)?.Days; // Calculate remaining days
+                <div class="favorite-card">
+                    <div class="card-image-wrap">
+                        @if (!string.IsNullOrEmpty(borrowing.ImageUrl))
+                        {
+                            <img src="@borrowing.ImageUrl" alt="@borrowing.Title" class="book-cover" />
+                        }
+                        else
+                        {
+                            <div class="no-image-cover">
+                                <i class="bi bi-journal-bookmark h1"></i>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="card-content">
+                        <h3>@borrowing.Title</h3>
+                        <p class="author">By: @borrowing.Author</p>
+                        <hr class="card-divider" />
+                        <div class="card-meta mb-3">
+                            <small class="text-muted"><i class="bi bi-calendar-arrow-down"></i> Borrowed: @(borrowing.BorrowDate.HasValue ? borrowing.BorrowDate.Value.ToString("dd/MM/yyyy") : "N/A")</small>
+                            <small class="text-muted"><i class="bi bi-calendar-x"></i> Due: @(borrowing.DueDate.HasValue ? borrowing.DueDate.Value.ToString("dd/MM/yyyy") : "N/A")</small>
+                            
+                            @if (daysLeft.HasValue && daysLeft >= 0)
+                            {
+                                <small class="text-success fw-bold"><i class="bi bi-clock"></i> Days Left: @daysLeft.Value</small>
+                            }
+                            else
+                            {
+                                <small class="text-danger fw-bold"><i class="bi bi-exclamation-triangle"></i> Overdue!</small>
+                            }
+                        </div>
+
+                        <!-- Warnings -->
+                        @if (daysLeft.HasValue && daysLeft == 5)
+                        {
+                            <p class="text-warning fw-bold small text-center"><i class="bi bi-exclamation-circle"></i> 5 days left to return.</p>
+                        }
+                        else if (daysLeft.HasValue && daysLeft < 5 && daysLeft >= 0)
+                        {
+                            <p class="text-danger fw-bold small text-center"><i class="bi bi-exclamation-circle"></i> Please return soon!</p>
+                        }
+
+                        <div class="action-buttons mt-auto d-flex flex-column gap-2">
+                            <button class="btn btn-sm btn-outline-primary" style="border-radius: 8px;" onclick="showDownloadModal(@borrowing.BookID)">
+                                <i class="fas fa-download"></i> Download
+                            </button>
+                            <button class="btn btn-sm btn-danger" style="border-radius: 8px;" onclick="confirmEndBorrowing(@borrowing.BorrowingID)">
+                                <i class="fas fa-undo"></i> End Borrowing
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="empty-state">
+                <i class="bi bi-book empty-icon"></i>
+                <h3>No active borrowings</h3>
+                <p>You haven't borrowed any books recently. Visit the library to find your next read!</p>
+                <a href="@Url.Action("Index", "Library")" class="btn-explore">Explore Library</a>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Modal for format selection -->
+<!-- (kept original modal HTML) -->
+<div class="modal fade" id="downloadModal" tabindex="-1" role="dialog" aria-labelledby="downloadModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="downloadModalLabel">Select Download Format</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="formatSelect">Formats *</label>
+                    <select id="formatSelect" class="form-control">
+                        <!-- Formats will be loaded here -->
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="downloadBook()">Download</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* =========================================================
+       PREMIUM GRID DESIGN (Shared CSS Logic)
+       ========================================================= */
+    .favorite-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 1rem;
+    }
+
+    .favorite-hero {
+        border-radius: 20px;
+        padding: 2.5rem 2rem;
+        color: #fff;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+
+    .favorite-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 2.2rem;
+        font-weight: 700;
+        margin-bottom: 0.3rem;
+    }
+
+    .favorite-subtitle {
+        color: rgba(255,255,255,0.8);
+        font-size: 1rem;
+        margin: 0;
+    }
+
+    .favorite-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 2rem;
+    }
+
+    .favorite-card {
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid rgba(0,0,0,0.05);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.04);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .favorite-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.08);
+    }
+
+    .card-image-wrap {
+        position: relative;
+        height: 320px;
+        background: #f8f9fa;
+        overflow: hidden;
+    }
+
+    .book-cover {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .favorite-card:hover .book-cover {
+        transform: scale(1.05);
+    }
+
+    .no-image-cover {
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #e9ecef 0%, #f8f9fa 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #adb5bd;
+    }
+
+    .card-content {
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+    }
+
+    .card-content h3 {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #1a1a2e;
+        margin: 0 0 0.3rem;
+        line-height: 1.3;
+    }
+
+    .author {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin: 0;
+    }
+
+    .card-divider {
+        margin: 1rem 0;
+        border-color: rgba(0,0,0,0.05);
+    }
+
+    .card-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+        font-size: 0.8rem;
+    }
+
+    /* Empty State */
+    .empty-state {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 5rem 2rem;
+        background: #fff;
+        border-radius: 20px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.03);
+    }
+
+    .empty-icon {
+        font-size: 4rem;
+        color: #dee2e6;
+        margin-bottom: 1rem;
+        display: block;
+    }
+
+    .empty-state h3 {
+        font-family: 'Playfair Display', serif;
+        color: #1a1a2e;
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-state p {
+        color: #6c757d;
+        margin-bottom: 2rem;
+    }
+
+    .btn-explore {
+        display: inline-block;
+        background: #00B4D8;
+        color: #fff;
+        padding: 0.8rem 2rem;
+        border-radius: 50px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 180, 216, 0.3);
+    }
+
+    .btn-explore:hover {
+        background: #0096b7;
+        color: #fff;
+        transform: translateY(-2px);
+    }
+
+    /* Cart FAB in Profile */
+    .cart-link {
+        position: fixed; bottom: 30px; right: 30px;
+        background: #00B4D8; color: #fff;
+        width: 56px; height: 56px;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.3rem; margin: 0;
+        box-shadow: 0 5px 20px rgba(0, 180, 216, 0.4);
+        z-index: 1000;
+    }
+    .cart-count {
+        position: absolute; top: -5px; right: -5px;
+        background: #e63946; color: #fff; border-radius: 50%;
+        width: 22px; height: 22px; font-size: 0.75rem; font-weight: 700;
+        display: flex; align-items: center; justify-content: center;
+    }
+</style>
+
+
+<script>
+    function confirmEndBorrowing(borrowingId) {
+        if (confirm("Are you sure you want to end the borrowing period early?")) {
+            $.ajax({
+                url: '@Url.Action("EndBorrowing", "Profile")',
+                type: 'POST',
+                data: { borrowingId: borrowingId },
+                success: function (response) {
+                    if (response.success) {
+                        alert(response.message);
+                        location.reload();
+                    } else {
+                        alert(response.message);
+                    }
+                },
+                error: function () {
+                    alert("An error occurred while trying to end the borrowing.");
+                }
+            });
+        }
+    }
+
+    function showDownloadModal(bookId) {
+        $('#downloadModal').data('bookId', bookId);
+
+        // Fetch available formats
+        $.ajax({
+            url: '@Url.Action("ShowDownloadFormats", "Profile")',
+            type: 'GET',
+            data: { bookId: bookId },
+            success: function (response) {
+                if (response.success) {
+                    $('#formatSelect').empty();
+                    response.formats.forEach(function (format) {
+                        $('#formatSelect').append('<option value="' + format.trim() + '">' + format.trim() + '</option>');
+                    });
+                    $('#downloadModal').modal('show');
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function () {
+                alert("An error occurred while fetching formats.");
+            }
+        });
+    }
+
+    function downloadBook() {
+        const bookId = $('#downloadModal').data('bookId');
+        const selectedFormat = $('#formatSelect').val();
+
+        if (!selectedFormat) {
+            alert("Please select a format.");
+            return;
+        }
+
+        window.location.href = '@Url.Action("DownloadBook", "Profile")' + '?bookId=' + bookId + '&selectedFormat=' + selectedFormat;
+    }
+</script>

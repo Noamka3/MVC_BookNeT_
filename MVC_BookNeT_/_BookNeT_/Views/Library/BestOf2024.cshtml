@@ -1,0 +1,191 @@
+﻿@model IEnumerable<_BookNeT_.Models.Books>
+
+<h1 class="header-style-1">Best Books of 2024</h1>
+<p class="view-description">
+    Handpicked by our editors, these are the most popular and acclaimed books of the year. Don't miss out on these top reads!
+</p>
+
+<div class="book-grid">
+    @if (!Model.Any())
+    {
+        <p class="no-books-message">No popular books found for 2024.</p>
+    }
+    else
+    {
+        foreach (var book in Model)
+        {
+            <div class="book-card">
+                <div class="book-image">
+                    @if (!string.IsNullOrEmpty(book.ImageUrl))
+                    {
+                        <img src="@book.ImageUrl" alt="@book.Title" />
+                    }
+                    else
+                    {
+                        <div class="no-image">
+                            <span>NO IMAGE</span>
+                        </div>
+                    }
+                </div>
+                <div class="book-details">
+                    <h3>@book.Title</h3>
+                    <p class="author">By: @book.Author</p>
+                    <p class="genre">Genre: @book.Genre</p>
+                    <p class="year">Publication Year: @book.YearOfPublication</p>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+<div class="back-link">
+    <a href="@Url.Action("Index", "Library")">Back to Library</a>
+</div>
+
+
+<style>
+    body {
+        background-color: #f3f2ec;
+        font-family: 'Arial', sans-serif;
+        margin: 0;
+        padding: 0;
+    }
+
+    .header-style-1 {
+        text-align: center;
+        font-size: 36px;
+        color: #0078a8;
+        text-transform: uppercase;
+        margin: 40px 0;
+        position: relative;
+        letter-spacing: 3px;
+    }
+
+    .header-style-1::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 60px;
+        height: 4px;
+        background: linear-gradient(90deg, #0078a8, #009bd8);
+        border-radius: 2px;
+    }
+
+    .book-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .book-card {
+        background-color: #f3f2ec;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+
+    .book-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .book-image {
+        position: relative;
+        width: 100%;
+        padding-top: 150%;
+        overflow: hidden;
+        border-bottom: 1px solid #f3f2ec;
+        margin-bottom: 15px;
+    }
+
+    .book-image img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+
+    .no-image {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #f3f2ec;
+        height: 100%;
+        color: #7f8c8d;
+        font-size: 14px;
+    }
+
+    .book-details h3 {
+        font-size: 18px;
+        font-weight: bold;
+        color: #2c3e50;
+        margin: 10px 0;
+    }
+
+    .book-details p {
+        font-size: 14px;
+        color: #7f8c8d;
+        margin: 5px 0;
+    }
+
+    .book-details .author {
+        font-size: 14px;
+        color: #555;
+    }
+
+    .book-details .genre,
+    .book-details .year {
+        font-size: 12px;
+        color: #777;
+    }
+
+    .view-description {
+        text-align: center;
+        font-size: 16px;
+        color: #555;
+        margin-bottom: 20px;
+        line-height: 1.5;
+    }
+
+    /* עיצוב עבור טקסט ללא ספרים */
+    .no-books-message {
+        text-align: center; /* ממרכז את הטקסט אופקית */
+        font-size: 18px; /* גודל טקסט קריא */
+        color: #000000;
+        margin-top: 20px; /* רווח עליון */
+        line-height: 1.5; /* ריווח שורות */
+    }
+
+    .back-link {
+        display: flex;
+        justify-content: center;
+        margin: 15px auto;
+        padding: 0;
+        width: 100%;
+    }
+
+    .back-link a {
+        color: #6c757d;
+        text-decoration: none;
+        font-size: 14px;
+        transition: color 0.3s ease;
+    }
+
+    .back-link a:hover {
+        color: #0078a8;
+    }
+</style>

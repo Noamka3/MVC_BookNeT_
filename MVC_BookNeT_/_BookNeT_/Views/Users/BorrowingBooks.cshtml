@@ -1,0 +1,60 @@
+﻿@model List<_BookNeT_.Models.BookUser.BorrowingBookViewModel>
+@{ ViewBag.Title = "BorrowingBooks";
+                Layout = "~/Views/Shared/_Tools.cshtml"; }
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Bootstrap Files -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.min.js"></script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="~/css/ToolsProfile/BorrowingBook.css" />
+</head>
+
+<<div class="container mt-5">
+    <h1 class="text-center mb-4 text-primary font-weight-bold">📚 Borrowed Books</h1>
+    <div class="books-container">
+        @if (Model != null && Model.Any())
+        {
+            foreach (var borrowing in Model)
+            {
+                int? daysLeft = (borrowing.DueDate - DateTime.Now)?.Days; // חישוב הימים שנותרו
+        <div class="book-card">
+            <div class="book-image-container">
+                <img src="@borrowing.ImageUrl" class="book-image" alt="Book image">
+            </div>
+            <div class="book-details">
+                <h5 class="book-title">@borrowing.Title</h5>
+                <p class="book-author">Author: @borrowing.Author</p>
+                <p class="book-borrow-date">
+                    Borrow Date: @(borrowing.BorrowDate.HasValue ? borrowing.BorrowDate.Value.ToShortDateString() : "Not available")
+                </p>
+                <p class="days-left">Days for return: @(daysLeft.HasValue ? daysLeft.Value : 0)</p>
+
+                @if (daysLeft == 5)
+                {
+                    <p class="text-danger font-weight-bold">⚠️ Reminder: Only 5 days left to return this book!</p>
+                }
+
+                @if (daysLeft < 5)
+                {
+                    <p class="text-danger font-weight-bold">⚠️ Reminder:left to return this book!</p>
+                }
+            </div>
+            <a class="btn btn-info" href="@Url.Action("DownloadPdf", "Profile")">Download PDF</a>
+        </div>
+        }
+            }
+            else
+            {
+<div class="col-12 text-center">
+    <div class="alert alert-warning text-center" role="alert">
+        You haven't borrowed any books yet. Start borrowing now!
+    </div>
+</div>}
+    </div>
+</div>
+

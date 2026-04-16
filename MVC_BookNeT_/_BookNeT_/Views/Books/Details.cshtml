@@ -1,0 +1,134 @@
+﻿@model _BookNeT_.Models.Books
+
+<div class="container mt-0 d-flex justify-content-center"> 
+    <div class="shadow p-4 rounded" style="background-color: #f3f2ec; max-width: 800px; width: 100%;">
+        <h2 class="text-center mb-4" style="color: black;">Book Details</h2>
+
+        @if (!string.IsNullOrEmpty(Model.ImageUrl))
+        {
+            <div class="text-center mb-4">
+                <img src="@Model.ImageUrl" alt="@Model.Title" class="img-fluid rounded" style="max-width: 200px; height: auto;" />
+            </div>
+        }
+
+        <table class="table table-bordered">
+            <tr><th>Book's Name</th><td>@Model.Title</td></tr>
+            <tr><th>Author's Name</th><td>@Model.Author</td></tr>
+            <tr><th>Publisher</th><td>@Model.Publisher</td></tr>
+            <tr><th>Year Of Publication</th><td>@Model.YearOfPublication</td></tr>
+            <tr><th>Formats</th><td>@Model.Formats</td></tr>
+            <tr><th>Genre</th><td>@Model.Genre</td></tr>
+            <tr><th>Purchase Price</th><td>₪@Model.PurchasePrice</td></tr>
+            <tr><th>Borrow Price</th><td>₪@Model.BorrowPrice</td></tr>
+            <tr><th>Number of Copies</th><td>@Model.Stock</td></tr>
+            <tr><th>Is Borrowable</th><td>@(Model.IsBorrowable == true ? "Yes" : "No")</td></tr>
+            <tr><th>Age Restriction</th><td>@Model.AgeRestriction</td></tr>
+            <tr><th>Is Discounted</th><td>@(Model.IsDiscounted == true ? "Yes" : "No")</td></tr>
+            <tr><th>Discount End Date</th><td>@(Model.DiscountEndDate.HasValue ? Model.DiscountEndDate.Value.ToShortDateString() : "N/A")</td></tr>
+            <tr><th>Description</th><td>@Model.Description</td></tr>
+            <tr><th>Discount Percentage</th><td>@(Model.DiscountPercentage.HasValue ? Model.DiscountPercentage + "%" : "N/A")</td></tr>
+            <tr><th>Status</th><td>@Model.Status</td></tr>
+        </table>
+
+        <div class="text-center mt-4">
+            <a href="/Books/Edit/@Model.BookID" class="btn btn-warning px-4">Edit</a>
+            <a href="/Books/Index" class="btn btn-secondary px-4">Back to List</a>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* ביטול רווחים בין ה-NAVBAR לתוכן */
+    body {
+        margin: 0;
+        padding: 0;
+        background-color: #f3f2ec; /* רקע כללי בז' */
+    }
+
+    /* ביטול רווח מיותר אחרי ה-NAVBAR */
+    .container-fluid, .container {
+        margin-top: 0 !important;
+    }
+
+    /* עיצוב ה-NAVBAR */
+    .navbar {
+        background-color: #f3f2ec; /* צבע בז' */
+        border-bottom: 1px solid black; /* קו תחתון עדין */
+    }
+
+    .navbar a, .navbar-brand {
+        color: black; /* טקסט שחור */
+    }
+
+    .navbar a:hover {
+        color: #555; /* טקסט אפור כהה בעת מעבר עכבר */
+    }
+
+    /* עיצוב כותרות */
+    h2, h3, h4, h5, h6 {
+        color: black; /* טקסט שחור */
+        margin-top: 0;
+    }
+
+    /* טפסים */
+    .form-control, .form-select {
+        background-color: #f3f2ec; /* רקע בז' */
+        color: black; /* טקסט שחור */
+        border: 1px solid #ccc; /* גבול אפור בהיר */
+    }
+
+    .form-control::placeholder {
+        color: #aaa;
+    }
+
+    /* עיצוב טבלאות */
+    /* עיצוב טבלאות */
+    .table {
+        background-color: #f3f2ec; /* רקע בז' */
+        color: black; /* טקסט שחור */
+        border: 1px solid black; /* גבול כללי לטבלה */
+        border-collapse: collapse; /* חיבור גבולות */
+    }
+
+    .table th, .table td {
+        border: 1px solid black; /* גבולות שחורים לכל תא */
+        padding: 8px; /* ריווח בתוך התאים */
+        text-align: left; /* יישור טקסט לשמאל */
+    }
+
+    .table th {
+        font-weight: bold; /* הדגשת טקסט בכותרות */
+        background-color: #f3f2ec; /* רקע אפור בהיר לכותרות */
+    }
+
+    /* עיצוב כפתורים */
+    .btn {
+        background-color: #f3f2ec; /* רקע בז' */
+        color: black; /* טקסט שחור */
+        border: 1px solid black; /* גבול שחור */
+    }
+
+    .btn:hover {
+        background-color: #ddd; /* רקע אפור בהיר בעת מעבר עכבר */
+        color: black;
+    }
+
+    /* קונטיינרים ותיבות תוכן */
+    .container, .shadow {
+        background-color: #f3f2ec; /* רקע בז' */
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    /* תיבות טקסט */
+    textarea {
+        background-color: #f3f2ec;
+        color: black;
+        border: 1px solid #ccc;
+    }
+    .custom-bg {
+        background-color: #f3f2ec; /* צבע בז' */
+    }
+</style>
+

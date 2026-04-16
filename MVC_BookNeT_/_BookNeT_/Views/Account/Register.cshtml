@@ -1,0 +1,174 @@
+@model _BookNeT_.Models.viewModels.RegisterViewModel
+
+@{
+    ViewBag.Title = "Register";
+}
+
+@section styles {
+    <link rel="stylesheet" href="~/css/Account.css" />
+    <style>body { overflow: hidden; } .container-fluid > hr { display: none; }</style>
+}
+
+<div class="auth-bg">
+    <div class="auth-card" data-initial="register">
+
+        <!-- Header -->
+        <div class="auth-card__head">
+            <a href="@Url.Action("Index","Home")" class="auth-card__logo">
+                <i class="fas fa-book-open"></i> BookNeT
+            </a>
+
+            <!-- Tabs -->
+            <div class="auth-tabs">
+                <button class="auth-tab"        data-tab="login">Sign In</button>
+                <button class="auth-tab active" data-tab="register">Register</button>
+                <div class="auth-tabs__bar on-register" id="tabBar"></div>
+            </div>
+        </div>
+
+        <!-- Sliding track – starts on register -->
+        <div class="auth-slider">
+            <div class="auth-track show-register" id="track">
+
+                <!-- ── LOGIN PANEL ── -->
+                <div class="auth-panel" data-panel="login">
+                    @using (Html.BeginForm("Login", "Account", FormMethod.Post))
+                    {
+                        <div class="field">
+                            <label>Email</label>
+                            <input type="email" name="Email" placeholder="you@example.com" autocomplete="email" />
+                        </div>
+
+                        <div class="field field--pass">
+                            <label>Password</label>
+                            <input type="password" name="Password" id="loginPassReg" placeholder="••••••••" />
+                            <button type="button" class="pass-toggle" onclick="togglePass('loginPassReg',this)" tabindex="-1"><i class="far fa-eye"></i></button>
+                        </div>
+
+                        <div class="auth-meta">
+                            <label><input type="checkbox" name="RememberMe" /> Remember me</label>
+                            <a href="@Url.Action("VerifyEmail","Account")">Forgot password?</a>
+                        </div>
+
+                        <button type="submit" class="btn-auth">Sign In</button>
+
+                        <p class="auth-switch">
+                            Don't have an account?
+                            <button type="button" onclick="switchTab('register')">Create one free</button>
+                        </p>
+                    }
+                </div>
+
+                <!-- ── REGISTER PANEL ── -->
+                <div class="auth-panel" data-panel="register">
+
+                    @using (Html.BeginForm("Register", "Account", FormMethod.Post))
+                    {
+                        <div>@Html.ValidationSummary(true, "", new { @class = "validation-summary-errors" })</div>
+
+                        <div class="fields-row">
+                            <div class="field">
+                                @Html.LabelFor(m => m.FirstName, "First Name")
+                                @Html.TextBoxFor(m => m.FirstName, new { @class = "form-control", placeholder = "First name" })
+                                @Html.ValidationMessageFor(m => m.FirstName, "", new { @class = "text-danger" })
+                            </div>
+                            <div class="field">
+                                @Html.LabelFor(m => m.LastName, "Last Name")
+                                @Html.TextBoxFor(m => m.LastName, new { @class = "form-control", placeholder = "Last name" })
+                                @Html.ValidationMessageFor(m => m.LastName, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            @Html.LabelFor(m => m.Email, "Email")
+                            @Html.TextBoxFor(m => m.Email, new { @class = "form-control", placeholder = "you@example.com", autocomplete = "email" })
+                            @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="fields-row">
+                            <div class="field">
+                                @Html.LabelFor(m => m.Phone, "Phone")
+                                @Html.TextBoxFor(m => m.Phone, new { @class = "form-control", type = "tel", maxlength = "10", placeholder = "0500000000" })
+                                @Html.ValidationMessageFor(m => m.Phone, "", new { @class = "text-danger" })
+                            </div>
+                            <div class="field">
+                                @Html.LabelFor(m => m.Age, "Age")
+                                @Html.TextBoxFor(m => m.Age, new { @class = "form-control", type = "number", min = "1", placeholder = "Age" })
+                                <span class="text-danger" id="ageError"></span>
+                                @Html.ValidationMessageFor(m => m.Age, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+
+                        <div class="field field--pass">
+                            @Html.LabelFor(m => m.Password, "Password")
+                            @Html.PasswordFor(m => m.Password, new { @class = "form-control", id = "passReg", placeholder = "Create a password" })
+                            <button type="button" class="pass-toggle" onclick="togglePass('passReg',this)" tabindex="-1"><i class="far fa-eye"></i></button>
+                            @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="field field--pass">
+                            @Html.LabelFor(m => m.ConfirmPassword, "Confirm Password")
+                            @Html.PasswordFor(m => m.ConfirmPassword, new { @class = "form-control", id = "confReg", placeholder = "Repeat your password" })
+                            <button type="button" class="pass-toggle" onclick="togglePass('confReg',this)" tabindex="-1"><i class="far fa-eye"></i></button>
+                            @Html.ValidationMessageFor(m => m.ConfirmPassword, "", new { @class = "text-danger" })
+                        </div>
+
+                        <button type="submit" class="btn-auth">Create Account</button>
+
+                        <p class="auth-switch">
+                            Already have an account?
+                            <button type="button" onclick="switchTab('login')">Sign in</button>
+                        </p>
+                    }
+                </div>
+
+            </div><!-- /track -->
+        </div><!-- /slider -->
+
+    </div><!-- /card -->
+</div>
+
+@section Scripts {
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+}
+
+<script>
+    const track  = document.getElementById('track');
+    const tabBar = document.getElementById('tabBar');
+    const tabs   = document.querySelectorAll('.auth-tab');
+
+    function switchTab(target) {
+        const isRegister = target === 'register';
+        track.classList.toggle('show-register', isRegister);
+        tabBar.classList.toggle('on-register', isRegister);
+        tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === target));
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        tabs.forEach(t => t.addEventListener('click', () => switchTab(t.dataset.tab)));
+
+        document.querySelector('input[name="Phone"]')?.addEventListener('input', function () {
+            if (this.value.length > 10) this.value = this.value.slice(0, 10);
+        });
+
+        const form = document.querySelector('form[action*="Register"]');
+        const ageInput = document.querySelector('input[name="Age"]');
+        const ageError = document.getElementById('ageError');
+        form?.addEventListener('submit', function (e) {
+            if (ageInput && parseInt(ageInput.value) < 1) {
+                e.preventDefault();
+                ageError.textContent = "Age must be greater than 0.";
+            } else if (ageError) {
+                ageError.textContent = "";
+            }
+        });
+    });
+
+    function togglePass(id, btn) {
+        const el = document.getElementById(id);
+        const ic = btn.querySelector('i');
+        if (el.type === 'password') { el.type = 'text'; ic.classList.replace('fa-eye','fa-eye-slash'); }
+        else                        { el.type = 'password'; ic.classList.replace('fa-eye-slash','fa-eye'); }
+    }
+</script>

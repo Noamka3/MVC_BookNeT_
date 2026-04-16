@@ -1,0 +1,1323 @@
+﻿
+@using _BookNeT_.Models
+@model _BookNeT_.Models.Books
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+
+<div class="page-container">
+
+    <div class="cart-icon">
+        <a href="@Url.Action("Index", "ShoppingCart")" class="cart-link">
+            <i class="fas fa-shopping-cart"></i>
+            <span class="cart-count">@ViewBag.CartCount</span>
+        </a>
+    </div>
+
+
+    <!-- Left Column (Book details) -->
+    <div class="left-column">
+        <div class="book-details-container">
+            <b><h1 class="book-title">@Model.Title</h1></b>
+
+            <div class="book-image-container">
+                @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                {
+                    <img src="@Model.ImageUrl" alt="@Model.Title" class="book-image" /> }
+                else
+                {
+                    <div class="no-image">
+                        <span>No Image Available</span>
+                    </div>}
+            </div>
+
+            <div class="book-info">
+                <table class="info-table">
+                    <tr><th>Author</th><td>@Model.Author</td></tr>
+                    <tr><th>Publisher</th><td>@Model.Publisher</td></tr>
+                    <tr><th>Year Of Publication</th><td>@Model.YearOfPublication</td></tr>
+                    <tr><th>Formats</th><td>@Model.Formats</td></tr>
+                    <tr><th>Genre</th><td>@Model.Genre</td></tr>
+                    <tr><th>Available Copies</th><td>@Model.Stock</td></tr>
+                    <tr><th>Status</th><td>@Model.Status</td></tr>
+                    <tr>
+                        <th>Number of Purchases and Borrows</th>
+                        <td>@(ViewBag.HistoryCount ?? 0)</td>
+                    </tr>
+                </table>
+
+                @if (!string.IsNullOrEmpty(Model.Description))
+                {
+                    <div class="book-description">
+                        <h3>Description</h3>
+                        @{ string[] paragraphs = Model.Description.Split(new[] { "\n" }, StringSplitOptions.RemoveEmptyEntries);
+                            foreach (var paragraph in paragraphs)
+                            {
+                                <p>@paragraph</p> } }
+                    </div>}
+
+                <div class="action-buttons">
+                    @{
+                        bool isAvailable = Model.Stock > 0 && ((Dictionary<int, bool>)ViewBag.BookAvailability)[Model.BookID];
+                    }
+
+                    @if (isAvailable)
+                    {
+                        <!-- כפתור הוסף לעגלה -->
+                        <div class="dropdown">
+                            <button class="btn add-to-cart-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-shopping-cart"></i> Add To Cart
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    @using (Html.BeginForm("AddToCart", "ShoppingCart", new { bookId = Model.BookID, isBorrow = false }, FormMethod.Post))
+                                    {
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="dropdown-item">
+                                            <i class="fas fa-shopping-bag"></i> Purchase
+                                        </button>
+                                    }
+                                </li>
+                                @if (Model.IsBorrowable ?? false)
+                                {
+                                    <li>
+                                        @using (Html.BeginForm("AddToCart", "ShoppingCart", new { bookId = Model.BookID, isBorrow = true }, FormMethod.Post))
+                                        {
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="dropdown-item">
+                                                <i class="fas fa-book"></i> Borrow
+                                            </button>
+                                        }
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+
+                        <!-- כפתור רכישה מיידית -->
+                        using (Html.BeginForm("QuickPurchase", "ShoppingCart", new { bookId = Model.BookID }, FormMethod.Post))
+                        {
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn purchase-btn">
+                                <i class="fas fa-shopping-cart"></i> Purchase Immediately: ₪@Model.PurchasePrice.Value.ToString("0.00")
+                            </button>
+                        }
+
+                        <!-- כפתור השאלה מיידית -->
+                        if (Model.IsBorrowable ?? false)
+                        {
+                            using (Html.BeginForm("QuickBorrow", "ShoppingCart", new { bookId = Model.BookID }, FormMethod.Post))
+                            {
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn borrow-btn">
+                                    <i class="fas fa-book"></i> Borrow Immediately: ₪@Model.BorrowPrice
+                                </button>
+                            }
+                        }
+
+                        if (Model.IsBorrowable == true)  // בדיקה האם הספר ניתן להשאלה
+                        {
+                            if (Model.WaitingList.Any()) // בדיקה האם יש רשימת המתנה
+                            {
+                                if (ViewBag.IsAdmin != null && (bool)ViewBag.IsAdmin)
+                                {
+                                    <!-- הכפתור יוצג תמיד עבור אדמין -->
+                                    <button type="button" class="btn btn-info show-waiting-list-btn" data-book-id="@Model.BookID">
+                                        <i class="fas fa-list"></i> View Waiting List
+                                    </button>
+                                }
+                            }
+                        }
+
+                    }
+                    else
+                    {
+                        <div class="out-of-stock">
+                            <i class="fas fa-exclamation-circle"></i>
+                            @if (Model.IsBorrowable == true)  // בדיקה האם הספר ניתן להשאלה
+                            {
+                                if (Model.WaitingList.Any())  // בדיקה האם יש רשימת המתנה
+                                {
+                                    if (Model.WaitingList.Any(w => w.UserID == (int?)Session["UserID"]))  // האם המשתמש ברשימה
+                                    {
+                                        <text>You are on the waiting list for this book.</text>
+                                        using (Html.BeginForm("RemoveFromWaitingList", "Library", new { bookId = Model.BookID }, FormMethod.Post))
+                                        {
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn waiting-list-btn">
+                                                <i class="fas fa-clock"></i> Remove from Waiting List
+                                            </button>
+                                        }
+                                    }
+                                    else  // המשתמש לא ברשימה
+                                    {
+                                        <text>Book is on waiting list</text>
+                                        using (Html.BeginForm("JoinWaitingList", "Library", new { bookId = Model.BookID }, FormMethod.Post))
+                                        {
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn waiting-list-btn">
+                                                <i class="fas fa-clock"></i> Join Waiting List
+                                            </button>
+                                        }
+                                    }
+                                }
+                                else  // אין רשימת המתנה
+                                {
+                                    <text>Out of Stock</text>
+                                    using (Html.BeginForm("JoinWaitingList", "Library", new { bookId = Model.BookID }, FormMethod.Post))
+                                    {
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn waiting-list-btn">
+                                            <i class="fas fa-clock"></i> Join Waiting List
+                                        </button>
+                                    }
+                                }
+                                <!-- כפתור View Waiting List תמיד יוצג אם הספר ניתן להשאלה -->
+                                <button type="button" class="btn btn-info show-waiting-list-btn" data-book-id="@Model.BookID">
+                                    <i class="fas fa-list"></i> View Waiting List
+                                </button>
+                            }
+                            else  // הספר לא ניתן להשאלה
+                            {
+                                <text>Out of Stock</text>
+                            }
+                        </div>
+                    }
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Right Column -->
+
+    <!-- Right Column (Reviews and Add Review Form) -->
+    <div class="right-column">
+        <div class="reviews-container">
+            <h2><b>Book Reviews</b></h2>
+
+            <div class="add-review-form">
+                @if (ViewBag.CanAddReview == true)
+                {
+                    <h3>Add Your Review</h3>
+                    @* Form for submitting a review *@
+                    using (Html.BeginForm("AddReview", "Library", FormMethod.Post))
+                    {
+                        @Html.AntiForgeryToken()
+                        @Html.Hidden("BookID", Model.BookID)
+                        <div class="rating-stars">
+                            <span>Your Rating:</span>
+                            <div class="stars">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    <i class="far fa-star" data-rating="@i"></i>
+                                }
+                            </div>
+                            <input type="hidden" name="Rating" id="selectedRating" />
+                        </div>
+                        <textarea name="FeedbackText" placeholder="Write your review here..."></textarea>
+                        <button type="submit" class="submit-review">Submit</button>
+                    }
+                }
+                else
+                {
+                    <p>You must borrow or purchase this book to leave a review.</p>
+                }
+            </div>
+
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success">
+                    @TempData["SuccessMessage"]
+                </div>
+            }
+
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger">
+                    @TempData["ErrorMessage"]
+                </div>
+            }
+
+            <div class="reviews-list">
+                @foreach (var review in ViewBag.Reviews ?? Enumerable.Empty<BookFeedback>())
+                {
+                    <div class="review-item">
+                        <div class="review-header">
+                            <div class="review-stars">
+                                @{ int rating = review.Rating ?? 0; }
+                                @for (int i = 1; i <= rating; i++)
+                                {
+                                    <i class="fas fa-star"></i>
+                                }
+                                @for (int i = rating + 1; i <= 5; i++)
+                                {
+                                    <i class="far fa-star"></i>
+                                }
+                            </div>
+                            <div class="review-author-date">
+                                <span class="review-author">By: @(review.Users?.FirstName + " " + review.Users?.LastName)</span>
+                                <span class="review-date">@review.FeedbackDate.ToString("dd/MM/yyyy HH:mm")</span>
+                            </div>
+
+                            @if (Session["Role"] != null && string.Compare(Session["Role"].ToString(), "Admin") == 0)
+                            {
+                                <form action="@Url.Action("RemoveBookReview", "Library")" method="post" class="delete-review-form">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="reviewId" value="@review.FeedbackID" />
+                                    <button type="submit" class="delete-review-btn" title="Remove Review">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </form>
+                            }
+
+                        </div>
+                        <div class="review-text">
+                            @review.FeedbackText
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Back to Library Link -->
+<div class="back-link">
+    <a href="/Library/Index">Back to Library</a>
+</div>
+
+<style>
+
+    body {
+        background-color: #f3f2ec; /* צבע קרם */
+    }
+
+    .page-container {
+        display: flex;
+        justify-content: space-between; /* מפזר את העמודות */
+        gap: 10px; /* הקטן את המרווח בין העמודות */
+        max-width: 1200px; /* רוחב מקסימלי של העמוד */
+        margin: 0 auto; /* ממרכז את התוכן */
+    }
+
+    .left-column {
+        flex: 1;
+        max-width: 48%;
+    }
+
+    .right-column {
+        flex: 1;
+        max-width: 35%;
+    }
+
+    .book-details-container {
+        max-width: 800px;
+        margin: 10px auto;
+        padding: 20px;
+        font-family: "Calibri Light", sans-serif;
+    }
+
+    .book-title {
+        text-align: center;
+        margin-bottom: 30px;
+        color: #333;
+    }
+
+    .reviews-container,
+    .add-review-form,
+    .review-item,
+    .review-author,
+    .review-text {
+        font-family: "Calibri Light", sans-serif;
+    }
+
+
+    .book-image-container {
+        text-align: center;
+        margin: 20px 0;
+    }
+
+    .book-image {
+        width: 300px;
+        height: 450px;
+        object-fit: contain;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .no-image {
+        width: 300px;
+        height: 450px;
+        margin: 0 auto;
+        background: #f8f9fa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        border: 2px dashed #ddd;
+        color: #666;
+    }
+
+    .book-info {
+        margin-top: 30px;
+    }
+
+    .info-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+    }
+
+    .info-table th,
+    .info-table td {
+        padding: 12px;
+        border-bottom: 1px solid #eee;
+        text-align: left;
+    }
+
+    .info-table th {
+        width: 200px;
+        color: #666;
+        font-weight: 600;
+    }
+
+    .action-buttons {
+        display: flex;
+        flex-direction: column; /* שמירת הכפתורים בטור */
+        gap: 10px; /* צמצום המרווח בין הכפתורים */
+        align-items: center; /* יישור למרכז */
+        justify-content: center; /* מרכז הכפתורים */
+        margin-top: 20px; /* ריווח עליון */
+    }
+
+    .action-btn {
+        background: linear-gradient(to right, #f0f8ff, #ffffff);
+        color: black;
+        border: 1px solid #dcdcdc;
+        padding: 10px 15px;
+        font-size: 14px;
+        font-weight: bold;
+        border-radius: 8px;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        text-align: center;
+    }
+
+
+    .action-btn:hover {
+        background-color: #dcdcdc;
+        transform: scale(1.05);
+    }
+
+
+    .btn {
+        padding: 8px 12px;
+        font-size: 14px;
+        font-weight: bold;
+        text-align: center;
+        border-radius: 6px;
+        border: none;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        color: white;
+    }
+
+    .btn-secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+    .purchase-btn, .borrow-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px 20px;
+        font-size: 14px;
+        font-weight: bold;
+        border-radius: 6px;
+        border: none;
+        width: 100%;
+        text-align: center;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+    .borrow-btn {
+        background: #6c757d;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        width: 100%;
+    }
+    .borrow-btn:hover {
+        background: #495057;
+        transform: scale(1.05);
+    }
+
+    .purchase-btn {
+        background-color: #0078a8;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        width: 100%;
+    }
+
+    .purchase-btn:hover {
+        background: #0056b3;
+        transform: scale(1.05);
+    }
+
+    /* עיצוב לאייקונים בתוך הכפתורים */
+    .borrow-btn i, .purchase-btn i {
+        margin-right: 5px;
+    }
+
+
+    .btn:hover {
+        background: linear-gradient(to right, #005f8b, #0078a8);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    .waiting-list-btn {
+        background-color: #f0f0f0;
+        color: black;
+        border: 1px solid #ccc;
+        padding: 10px;
+        font-size: 14px;
+        border-radius: 6px;
+        margin-bottom: 10px;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+        width: 100%;
+    }
+
+    .waiting-list-btn:hover {
+        background-color: #dcdcdc;
+        transform: scale(1.05);
+    }
+
+    .out-of-stock {
+        color: #dc3545;
+        font-weight: bold;
+        padding: 10px;
+        margin-bottom: 10px;
+        background-color: #f8d7da;
+        border-radius: 4px;
+        text-align: center;
+        font-size: 14px;
+        position: relative;
+    }
+
+    .btn i {
+        margin-right: 5px;
+    }
+
+    .book-description {
+        margin-top: 30px;
+        padding: 20px;
+        background-color: #f3f2ec;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .book-description h3 {
+        margin-bottom: 15px;
+        color: #333;
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    .book-description p {
+        margin-bottom: 15px;
+        color: #555;
+        font-size: 14px;
+        line-height: 1.8;
+    }
+
+    .back-link {
+        display: flex;
+        justify-content: center;
+        margin: 15px auto;
+        padding: 0;
+        width: 100%;
+    }
+
+    .back-link a {
+        color: #6c757d;
+        text-decoration: none;
+        font-size: 14px;
+        padding-left: 0;
+        margin: 0;
+    }
+
+    /* review style */
+    .reviews-container {
+        padding: 25px;
+        background-color: #f3f2ec;
+        border-radius: 12px;
+        font-size: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        margin-top: 15px;
+    }
+
+    /* the title of the comments */
+    .reviews-container h2 {
+        font-size: 24px;
+        color: #000000;
+        margin-bottom: 25px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #eee;
+    }
+
+    .add-review-form {
+        background-color: #f3f2ec;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+    }
+
+    .add-review-form h3 {
+        font-size: 18px;
+        margin-bottom: 5px;
+        margin-top: 5px;
+    }
+
+    .rating-stars {
+        margin: 15px 0;
+    }
+
+    .stars {
+        display: inline-block;
+        margin-left: 10px;
+    }
+
+    .stars i {
+        color: #ffd700;
+        cursor: pointer;
+        margin: 0 5px;
+        font-size: 20px;
+        transition: transform 0.2s ease;
+    }
+
+    .stars i:hover {
+        transform: scale(1.2);
+    }
+
+    /* comments style */
+    .review-item {
+        background-color: #f3f2ec;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+    }
+
+    .review-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+
+    .review-header {
+        margin-bottom: 10px;
+    }
+
+    .review-author-date {
+        margin-top: 5px;
+        margin-bottom: 10px;
+    }
+
+
+    .review-stars i {
+        font-size: 18px;
+        color: #ffd700;
+    }
+
+
+    .review-stars {
+        display: flex;
+        justify-content: flex-start;
+        margin-right: 10px;
+    }
+
+    .review-author {
+        font-weight: 600;
+        color: #333;
+    }
+
+    .review-date {
+        color: #999;
+        font-size: 0.9em;
+    }
+
+    .review-text {
+        color: #333;
+        font-size: 14px;
+        line-height: 1.6;
+        margin-top: 10px; /* מרווח קטן בין התגובה לכוכבים */
+    }
+
+    .reviews-list > div:not(:last-child) {
+        margin-bottom: 20px;
+    }
+
+    textarea[name="FeedbackText"] {
+        width: 100%;
+        min-height: 120px;
+        padding: 15px;
+        background-color: #f3f2ec;
+        border: 1px solid #000000;
+        border-radius: 8px;
+        font-size: 16px;
+        resize: vertical;
+    }
+
+    textarea[name="ReviewText"]:focus {
+        border-color: #007bff;
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+    }
+
+    .submit-review {
+        background-color: #007bff;
+        color: white;
+        padding: 8px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+        margin-top: 10px;
+        font-size: 13px;
+    }
+
+    .submit-review:hover {
+        background-color: #0056b3;
+        transform: translateY(-2px);
+    }
+
+    .alert {
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 6px;
+    }
+
+    .alert-success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+
+    .alert-danger {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+
+
+    .cart-icon {
+        position: fixed;
+        top: 80px; /* מתחת ל-NAVBAR */
+        right: 20px; /* מרחק מהקצה הימני */
+        z-index: 1100; /* מעל כל אלמנט אחר */
+    }
+
+    .cart-link {
+        display: inline-block;
+        padding: 8px; /* ריווח קטן יותר */
+        background: #008fc7;
+        color: white;
+        border-radius: 50%;
+        width: 40px; /* גודל קטן יותר */
+        height: 40px; /* גודל קטן יותר */
+        text-align: center;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .cart-link:hover {
+        transform: translateY(-2px);
+        background: #008fc7;
+    }
+
+    .cart-link i {
+        font-size: 18px; /* גודל אייקון מותאם */
+        line-height: 20px; /* גובה טקסט */
+    }
+
+
+    .cart-count {
+        position: absolute;
+        top: -6px; /* התאמה לגודל האייקון */
+        right: -6px;
+        background: #dc3545;
+        color: white;
+        border-radius: 50%;
+        width: 20px; /* גודל קטן יותר */
+        height: 20px; /* גודל קטן יותר */
+        font-size: 11px;
+        line-height: 20px;
+        text-align: center;
+        font-weight: bold;
+    }
+
+
+    @@keyframes pop {
+        0% { transform: scale(0.8); }
+        50% { transform: scale(1.2); }
+        100% { transform: scale(1); }
+    }
+
+    /* נוסיף את זה לחלק של הסטיילים שלך */
+    .custom-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1050;
+    }
+
+    .custom-modal.show {
+        display: block;
+    }
+
+    .custom-modal-dialog {
+        position: relative;
+        width: 90%;
+        max-width: 500px;
+        margin: 50px auto;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .custom-modal-content {
+        padding: 20px;
+    }
+
+    .custom-modal-header {
+        padding: 15px 20px;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .custom-modal-title {
+        margin: 0;
+        font-size: 1.25rem;
+        color: #333;
+    }
+
+    .custom-modal-close {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        color: #666;
+        cursor: pointer;
+    }
+
+    .custom-modal-body {
+        padding: 20px;
+    }
+
+    /* מרחק בין ה-NAVBAR לתוכן */
+    body {
+        padding-top: 70px; /* מרחק של 70px מהראש */
+    }
+
+    .waiting-list-details ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .waiting-list-details li {
+        padding: 12px;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .waiting-list-details li:last-child {
+        border-bottom: none;
+    }
+
+    .waiting-count {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .waiting-count h4 {
+        color: #0d6efd;
+        margin-bottom: 10px;
+    }
+
+    .estimated-time {
+        color: #6c757d;
+        font-size: 0.9em;
+    }
+
+
+    /* כפתור הרשימה הנפתחת */
+    .add-to-cart-btn {
+        background-color: #0078a8; /* צבע כחול */
+        color: #fff; /* טקסט לבן */
+        font-size: 14px;
+        padding: 12px 20px; /* ריווח פנימי */
+        border-radius: 6px; /* פינות מעוגלות */
+        border: none; /* ללא גבול */
+        transition: background-color 0.3s ease, transform 0.2s ease;
+        display: flex;
+        align-items: center; /* ממרכז אנכית */
+        justify-content: center; /* ממרכז אופקית */
+        gap: 8px; /* רווח בין האייקון לטקסט */
+        text-align: center; /* ממרכז טקסט */
+        width: 100%; /* התאמה לרוחב מלא */
+        box-sizing: border-box;
+    }
+
+
+
+    .add-to-cart-btn:hover {
+        background-color: #0056b3;
+        transform: scale(1.05);
+        cursor: pointer;
+    }
+
+    .dropdown.show .dropdown-menu {
+        opacity: 1;
+        transform: translate(-50%, 0); /
+    }
+
+    .action-buttons .btn {
+        padding: 8px 12px;
+        font-size: 14px;
+        font-weight: bold;
+        text-align: center;
+        border-radius: 6px;
+        border: none;
+        transition: all 0.3s ease;
+    }
+
+    .dropdown-menu {
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 10px 0;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        z-index: 1050;
+        min-width: 150px;
+        width: 100%;
+    }
+
+    .dropdown-item {
+        padding: 10px 20px; /* ריווח פנימי */
+        font-size: 14px; /* גודל טקסט */
+        color: #0078a8; /* צבע טקסט */
+        text-align: center; /* יישור טקסט */
+        transition: background-color 0.2s ease, color 0.2s ease; /* אפקט מעבר חלק */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px; /* רווח בין האייקון לטקסט */
+    }
+
+    /* עיצוב אייקונים */
+    .dropdown-item i {
+        font-size: 16px;
+        color: #0078a8; /* צבע תואם לטקסט */
+    }
+
+    /* אפקט ריחוף */
+    .dropdown-item:hover {
+        background-color: #f0f8ff; /* רקע כחול בהיר */
+        color: #0056b3; /* צבע כהה יותר */
+        text-decoration: none; /* הסר קו תחתון */
+    }
+
+    .btn.add-to-cart-btn,
+    .btn.purchase-btn,
+    .btn.borrow-btn {
+        background: #f3f2ec;
+        color: black;
+        border: 1px solid #dcdcdc; /* הוספת גבול עדין */
+        transition: background-color 0.3s ease, transform 0.2s ease;
+        margin: 0; /* הסרת מרווחים חיצוניים */
+    }
+
+    .btn.add-to-cart-btn:hover,
+    .btn.purchase-btn:hover,
+    .btn.borrow-btn:hover {
+        background: #dcdcdc; /* אפור בהיר בריחוף */
+        transform: scale(1.05); /* אפקט קל של הגדלה */
+        cursor:
+            pointer;
+    }
+
+
+    /* סגנון כללי לכפתורים */
+    .join-waiting-list-btn,
+    .remove-waiting-list-btn,
+    .view-waiting-list-btn {
+        margin-top: 10px; /* מרווח עליון לכפתורים בלבד */
+        background-color: #f8d7da;
+        color: black; /* טקסט שחור */
+        border: 1px solid #dcdcdc; /* גבול עדין */
+        font-size: 14px;
+        border-radius: 6px;
+        margin-bottom: 2px; /* רווח בין הכפתורים */
+        transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+    .waiting-list-btn, .show-waiting-list-btn {
+        background-color: #f8d7da;
+        color: black;
+        border: 1px solid #ccc; /* גבול דק */
+        padding: 10px;
+        font-size: 14px;
+        border-radius: 6px;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+        margin-bottom: 10px; /* רווח בין הכפתורים */
+    }
+
+    .waiting-list-btn:hover, .show-waiting-list-btn:hover {
+        background-color: #dcdcdc; /* אפור כהה יותר בריחוף */
+        transform: scale(1.05);
+    }
+
+    .join-waiting-list-btn:hover,
+    .remove-waiting-list-btn:hover,
+    .view-waiting-list-btn:hover {
+        background-color: #f8d7da;
+        transform: scale(1.05); /* הגדלה קלה בריחוף */
+        cursor: pointer;
+    }
+
+    .delete-review-form {
+        margin: 0;
+        padding: 0;
+        position: absolute;
+        top: 10px;
+        right: 10px;
+    }
+
+    .delete-review-btn {
+        background: none;
+        border: none;
+        color: red;
+        font-size: 18px;
+        cursor: pointer;
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 100;
+        transition: transform 0.2s ease;
+    }
+
+    .delete-review-btn:hover {
+        transform: scale(1.2);
+    }
+
+    .review-item {
+        position: relative;
+        /* שאר הסגנונות הקיימים */
+    }
+
+    /*מחיקה מ-WAITING LIST*/
+    .remove-user-btn {
+        background: none;
+        border: none;
+        color: #dc3545;
+        padding: 5px;
+        cursor: pointer;
+        transition: transform 0.2s ease;
+    }
+
+    .remove-user-btn:hover {
+        transform: scale(1.2);
+    }
+
+    .list-group-item {
+        position: relative;
+    }
+
+
+</style>
+
+
+
+<!-- סקריפט ראשון - טיפול בדירוג כוכבים -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const stars = document.querySelectorAll('.stars i');
+        const ratingInput = document.getElementById('selectedRating');
+
+        stars.forEach(star => {
+            star.addEventListener('mouseover', function () {
+                const rating = this.getAttribute('data-rating');
+                highlightStars(rating);
+            });
+
+            star.addEventListener('click', function () {
+                const rating = this.getAttribute('data-rating');
+                ratingInput.value = rating;
+                highlightStars(rating);
+            });
+        });
+
+        document.querySelector('.stars')?.addEventListener('mouseout', function () {
+            const selectedRating = ratingInput.value || 0;
+            highlightStars(selectedRating);
+        });
+
+        function highlightStars(rating) {
+            stars.forEach(star => {
+                const starRating = star.getAttribute('data-rating');
+                if (starRating <= rating) {
+                    star.classList.remove('far');
+                    star.classList.add('fas');
+                    star.style.transform = 'scale(1.1)';
+                } else {
+                    star.classList.remove('fas');
+                    star.classList.add('far');
+                    star.style.transform = 'scale(1)';
+                }
+            });
+        }
+    });
+</script>
+<script>
+    // פונקציות לטיפול בעגלה
+    function updateCartIcon() {
+        $.get('@Url.Action("GetCartCount", "ShoppingCart")', function(response) {
+            const countElement = $('.cart-count');
+            const count = response.count || 0;
+
+            countElement.text(count);
+            countElement.show();
+
+            countElement.css('animation', 'none');
+            countElement[0].offsetHeight; // trigger reflow
+            countElement.css('animation', 'pop 0.3s ease');
+        });
+    }
+
+    // טיפול בהוספה לעגלה
+    $(document).ready(function() {
+        $('.add-to-cart-form').on('submit', function(e) {
+            e.preventDefault();
+            const form = $(this);
+
+            $.ajax({
+                url: form.attr('action'),
+                type: 'POST',
+                data: form.serialize(),
+                success: function(response) {
+                    if (response.success) {
+                        updateCartIcon();
+                        alert('Item added to cart successfully!');
+                    } else {
+                        alert(response.message || 'Failed to add item to cart.');
+                    }
+                },
+                error: function() {
+                    alert('Error communicating with server.');
+                }
+            });
+        });
+
+        // עדכון ראשוני של העגלה
+        updateCartIcon();
+    });
+
+    function showModal(title, content) {
+        $('#customModal').remove();
+
+        const modalHtml = `
+        <div class="custom-modal" id="customModal">
+            <div class="custom-modal-dialog">
+                <div class="custom-modal-content">
+                    <div class="custom-modal-header">
+                        <h5 class="custom-modal-title">${title}</h5>
+                        <button type="button" class="custom-modal-close" onclick="closeCustomModal()">&times;</button>
+                    </div>
+                    <div class="custom-modal-body">${content}</div>
+                </div>
+            </div>
+        </div>
+    `;
+        $('body').append(modalHtml);
+
+        // הצגת המודל
+        setTimeout(() => {
+            $('#customModal').addClass('show');
+        }, 50);
+    }
+
+
+    function closeCustomModal() {
+        const modal = $('#customModal');
+        modal.removeClass('show');
+        setTimeout(() => {
+            modal.remove();
+        }, 300);
+    }
+
+    // טיפול בלחיצה על כפתור הצגת רשימת המתנה
+    $(document).on('click', '.show-waiting-list-btn', function () {
+        const bookId = $(this).data('book-id');
+
+        $.get('/Library/GetWaitingListInfo', { bookId: bookId })
+            .done(function (response) {
+                if (response.success) {
+                    let modalContent = `
+                    <div class="waiting-list-info">
+                        <div class="waiting-count">
+                            <h4>Book Availability Status</h4>
+                            <p><i class="fas fa-users"></i> Currently ${response.waitingCount} ${response.waitingCount === 1 ? 'person is' : 'people are'} waiting</p>
+                        </div>
+                        <div class="waiting-list-details">
+                            <h5>Expected Waiting Times:</h5>
+                            <ul class="list-group">
+                `;
+
+                    response.waitingList.forEach(user => {
+                        const estimatedDays = user.EstimatedAvailability;
+                        modalContent += `
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>Queue Position ${user.Position}:</strong> ${user.UserName}
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span class="estimated-time">
+                                    <i class="far fa-clock"></i> Available in ${estimatedDays} days
+                                </span>
+                                ${response.isAdmin ? `
+                                    <button onclick="removeUserFromWaitingList(${bookId}, ${user.UserID})"
+                                            class="remove-user-btn"
+                                            title="Remove user">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </li>
+                    `;
+                    });
+
+                    modalContent += `
+                            </ul>
+                            <div class="waiting-note mt-3">
+                                <small style="color: #000;">
+                                    <i class="fas fa-info-circle"></i> Standard borrowing period is 30 days. Actual availability may vary.
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                    showModal('Waiting List Information', modalContent);
+                } else {
+                    alert(response.message || 'Failed to fetch waiting list.');
+                }
+            })
+            .fail(function () {
+                alert('Error communicating with the server.');
+            });
+    });
+
+    // סגירת המודל בלחיצה מחוץ לתוכן
+    $(document).on('click', '.custom-modal', function(e) {
+        if ($(e.target).hasClass('custom-modal')) {
+            closeCustomModal();
+        }
+    });
+
+    //  פונקציה למחיקת משתמש
+    function removeUserFromWaitingList(bookId, userId) {
+        if (confirm('Are you sure you want to remove this user from the waiting list?')) {
+            $.ajax({
+                url: '/Library/RemoveUserFromWaitingList',
+                type: 'POST',
+                data: {
+                    bookId: bookId,
+                    userId: userId,
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // רענון הרשימה אחרי מחיקה
+                        $('.show-waiting-list-btn[data-book-id="' + bookId + '"]').click();
+                    } else {
+                        alert(response.message || 'Failed to remove user from waiting list.');
+                    }
+                },
+                error: function() {
+                    alert('Error communicating with server.');
+                }
+            });
+            function updateWaitingList(bookId) {
+                $.get('/Library/GetWaitingListInfo', { bookId: bookId })
+                    .done(function (response) {
+                        if (response.success) {
+                            const waitingList = response.waitingList;
+                            const listItems = waitingList.map(user => `
+                    <li>
+                        Queue Position ${user.Position}: ${user.UserName} (Available in ${user.EstimatedAvailability} days)
+                    </li>
+                `).join('');
+                            $('#waitingListContainer').html(listItems);
+                        } else {
+                            alert(response.message || 'Failed to update waiting list.');
+                        }
+                    });
+            }
+
+            function removeUserFromWaitingList(bookId, userId) {
+                if (confirm('Are you sure you want to remove this user from the waiting list?')) {
+                    $.ajax({
+                        url: '/Library/RemoveUserFromWaitingList',
+                        type: 'POST',
+                        data: {
+                            bookId: bookId,
+                            userId: userId,
+                            __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                // רענון הרשימה אחרי מחיקה
+                                $('.show-waiting-list-btn[data-book-id="' + bookId + '"]').click();
+                            } else {
+                                alert(response.message || 'Failed to remove user from waiting list.');
+                            }
+                        },
+                        error: function() {
+                            alert('Error communicating with server.');
+                        }
+                    });
+                }
+            }
+
+        }
+    }
+</script>

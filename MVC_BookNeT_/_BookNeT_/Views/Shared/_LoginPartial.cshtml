@@ -1,0 +1,27 @@
+﻿
+<ul class="navbar-nav ms-auto">
+
+    <li class="nav-item">
+        @Html.ActionLink("Login", "Login", "Account", new { }, new { @style = "display: inline-block; margin-left: 500px;  padding-left:200px; text-decoration: underline;" })
+    </li>
+    <li class="nav-item">
+        @Html.ActionLink("Register", "Register", "Account", new { }, new { @Style = "display: inline-block;   padding-left:10px; text-decoration: underline; " })
+    </li>
+</ul>
+@*@if (SignInManager.IsSignedIn(User))
+    {
+    <li class="nav-item">
+        @{ var user = await UserManager.GetUserAsync(User); }
+        <span>Hello, @user?.FullName,</span>
+        <a class="nav-link text-dark" asp-controller="Account" asp-action="Logout" style="display: inline-block; margin-left: -8px; text-decoration: underline; ">Logout</a>
+    </li>
+    }
+    else
+    {
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-controller="Account" asp-action="Login">Login</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-controller="Account" asp-action="Register">Register</a>
+        </li>
+    }*@

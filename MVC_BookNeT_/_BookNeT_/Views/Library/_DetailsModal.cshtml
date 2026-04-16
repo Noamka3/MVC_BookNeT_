@@ -1,0 +1,508 @@
+@using _BookNeT_.Models
+@model _BookNeT_.Models.Books
+
+@{
+    bool isAvailable = ViewBag.BookAvailability != null &&
+                       ((Dictionary<int, bool>)ViewBag.BookAvailability).ContainsKey(Model.BookID) &&
+                       Model.Stock > 0 &&
+                       ((Dictionary<int, bool>)ViewBag.BookAvailability)[Model.BookID];
+
+    bool isBorrowable  = Model.IsBorrowable == true;
+    int? sessionUserId = Session["UserID"] != null ? (int?)Session["UserID"] : null;
+    bool userInWaiting = isBorrowable && Model.WaitingList != null && Model.WaitingList.Any(w => w.UserID == sessionUserId);
+    bool isAdmin       = Session["Role"] != null && Session["Role"].ToString() == "Admin";
+    string addCartUrl  = Url.Action("AddToCart",          "ShoppingCart");
+    string joinUrl     = Url.Action("JoinWaitingList",    "Library");
+    string leaveUrl    = Url.Action("RemoveFromWaitingList","Library");
+    string reviewUrl   = Url.Action("AddReview",          "Library");
+    string delRevUrl   = Url.Action("RemoveBookReview",   "Library");
+}
+
+<div class="bdm-wrap">
+
+    <!-- LEFT: cover + actions -->
+    <div class="bdm-left">
+        <div class="bdm-cover">
+            @if (!string.IsNullOrEmpty(Model.ImageUrl))
+            {
+                <img src="@Model.ImageUrl" alt="@Model.Title" />
+            }
+            else
+            {
+                <div class="bdm-no-img"><i class="fas fa-book"></i></div>
+            }
+        </div>
+
+        <div class="bdm-actions">
+            @if (isAvailable)
+            {
+                <form method="post" action="@addCartUrl" onsubmit="return handleCartSubmit(event, this)">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="bookId"   value="@Model.BookID" />
+                    <input type="hidden" name="isBorrow" value="false" />
+                    <button type="submit" class="bdm-btn bdm-btn--buy" title="Purchase Book">
+                        <i class="fas fa-shopping-bag"></i> Purchase &#8362;@(Model.PurchasePrice.HasValue ? Model.PurchasePrice.Value.ToString("0.00") : "0.00")
+                    </button>
+                </form>
+
+                if (isBorrowable)
+                {
+                    <form method="post" action="@addCartUrl" onsubmit="return handleCartSubmit(event, this)">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="bookId"   value="@Model.BookID" />
+                        <input type="hidden" name="isBorrow" value="true" />
+                        <button type="submit" class="bdm-btn bdm-btn--borrow" title="Borrow Book">
+                            <i class="fas fa-book"></i> Borrow &#8362;@(Model.BorrowPrice.HasValue ? Model.BorrowPrice.Value.ToString("0.00") : "0.00")
+                        </button>
+                    </form>
+                }
+            }
+            else if (isBorrowable)
+            {
+                if (userInWaiting)
+                {
+                    <form method="post" action="@leaveUrl">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="bookId" value="@Model.BookID" />
+                        <button type="submit" class="bdm-btn bdm-btn--danger">
+                            <i class="fas fa-clock"></i> Leave Waiting List
+                        </button>
+                    </form>
+                }
+                else
+                {
+                    <form method="post" action="@joinUrl">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="bookId" value="@Model.BookID" />
+                        <button type="submit" class="bdm-btn bdm-btn--wait" style="background:#f0c14b; color:#333;">
+                            <i class="fas fa-clock"></i> Join Waiting List
+                        </button>
+                    </form>
+                }
+            }
+            else
+            {
+                <div class="bdm-out-of-stock" style="padding:1rem; text-align:center; color:#dc3545; font-weight:700; background:#fff5f5; border-radius:12px;">
+                    <i class="fas fa-exclamation-circle"></i> Out of Stock
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- RIGHT: info + reviews -->
+    <div class="bdm-right">
+        <h2 class="bdm-title">@Model.Title</h2>
+        <p class="bdm-author">by @Model.Author</p>
+
+        <div class="bdm-meta">
+            @if (!string.IsNullOrEmpty(Model.Genre))           { <span class="bdm-tag">@Model.Genre</span> }
+            @if (Model.YearOfPublication.HasValue)              { <span class="bdm-tag"><i class="far fa-calendar-alt"></i> @Model.YearOfPublication</span> }
+            @if (!string.IsNullOrEmpty(Model.Formats))         { <span class="bdm-tag">@Model.Formats</span> }
+        </div>
+
+        <table class="bdm-table">
+            @if (!string.IsNullOrEmpty(Model.Publisher))
+            {
+                <tr><th>Publisher</th><td>@Model.Publisher</td></tr>
+            }
+            <tr><th>Copies available</th><td>@Model.Stock</td></tr>
+            <tr><th>Total interactions</th><td>@(ViewBag.HistoryCount ?? 0)</td></tr>
+            @if (!string.IsNullOrEmpty(Model.Status))
+            {
+                <tr><th>Status</th><td><span style="color:#00B4D8; font-weight:600;">@Model.Status</span></td></tr>
+            }
+        </table>
+
+        @if (!string.IsNullOrEmpty(Model.Description))
+        {
+            <div class="bdm-desc">
+                @foreach (var para in Model.Description.Split(new[] { "\n" }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    <p style="margin-bottom:0.8rem;">@para</p>
+                }
+            </div>
+        }
+
+        <!-- reviews -->
+        <div class="bdm-reviews">
+            <h4 class="bdm-reviews__title">Customer Reviews</h4>
+
+            @if (ViewBag.CanAddReview == true)
+            {
+                <form method="post" action="@reviewUrl" class="bdm-review-form">
+                    @Html.AntiForgeryToken()
+                    @Html.Hidden("BookID", Model.BookID)
+                    <div class="bdm-stars" id="bdmStars" style="font-size:1.5rem; margin-bottom:0.8rem;">
+                        @for (int i = 1; i <= 5; i++) { <i class="far fa-star" data-r="@i" style="color:#f0c14b; cursor:pointer;"></i> }
+                    </div>
+                    <input type="hidden" name="Rating" id="bdmRating" value="0" />
+                    <textarea name="FeedbackText" class="bdm-textarea" placeholder="Share your thoughts about this book…" required></textarea>
+                    <button type="submit" class="bdm-btn bdm-btn--submit" style="background:#00B4D8; color:#fff; margin-top:0.8rem; box-shadow:0 4px 15px rgba(0,180,216,0.3);">
+                        <i class="fas fa-paper-plane"></i> Submit Review
+                    </button>
+                </form>
+            }
+
+            <div class="bdm-reviews__list">
+                @if (ViewBag.Reviews != null)
+                {
+                    var reviewsList = (IEnumerable<BookFeedback>)ViewBag.Reviews;
+                    if (reviewsList.Any())
+                    {
+                        foreach (var r in reviewsList)
+                        {
+                            int starCount = r.Rating ?? 0;
+                            <div class="bdm-review">
+                                <div class="bdm-review__header" style="display:flex; align-items:center; gap:0.8rem; margin-bottom:0.5rem; position:relative;">
+                                    <div class="bdm-review__avatar" style="width:40px; height:40px; border-radius:50%; display:flex; justify-content:center; align-items:center; font-weight:bold;">
+                                        @(r.Users?.FirstName?.Substring(0, 1).ToUpper() ?? "U")
+                                    </div>
+                                    <div style="flex:1;">
+                                        <strong style="display:block; color:#0f172a; font-size:0.95rem;">@r.Users?.FirstName @r.Users?.LastName</strong>
+                                        <small style="color:#64748b; font-size:0.8rem;">@r.FeedbackDate.GetValueOrDefault().ToString("MMM dd, yyyy")</small>
+                                    </div>
+                                    @if (isAdmin)
+                                    {
+                                        <form method="post" action="@delRevUrl" class="bdm-del-form" style="margin:0;">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="reviewId" value="@r.FeedbackID" />
+                                            <button type="submit" class="bdm-del-btn" title="Delete Review" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:1.1rem; padding:0.5rem; transition:transform 0.2s;">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </form>
+                                    }
+                                </div>
+                                <div class="bdm-review__stars" style="color:#f0c14b; font-size:1rem; margin-bottom:0.5rem;">
+                                    @for (int i = 1; i <= 5; i++) { <i class="@(i <= starCount ? "fas" : "far") fa-star"></i> }
+                                </div>
+                                <p class="bdm-review__text" style="color:#334155; line-height:1.6; margin:0; font-size:0.95rem;">@r.FeedbackText</p>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div style="text-align:center; padding:2rem; background:#f8fafc; border-radius:12px; color:#64748b;">
+                            <i class="fas fa-comment-slash" style="font-size:2rem; margin-bottom:0.8rem; color:#cbd5e1;"></i>
+                            <p style="margin:0;">No reviews yet. Be the first to review this book!</p>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Premium Square Modal Styles */
+    .bdm-box {
+        width: 800px !important;
+        height: 800px !important;
+        max-width: 95vw !important;
+        max-height: 95vh !important;
+        aspect-ratio: 1 / 1;
+        display: flex !important;
+        flex-direction: column !important;
+        overflow: hidden !important;
+        border-radius: 24px !important;
+        background: #ffffff !important;
+        box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25) !important;
+    }
+
+    .bdm-content {
+        flex: 1;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .bdm-content::-webkit-scrollbar {
+        width: 8px;
+    }
+    .bdm-content::-webkit-scrollbar-track {
+        background: transparent;
+        margin: 10px 0;
+    }
+    .bdm-content::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 10px;
+    }
+    .bdm-content::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
+
+    .bdm-wrap {
+        display: grid !important;
+        grid-template-columns: 260px 1fr !important;
+        gap: 3rem !important;
+        padding: 3rem !important;
+        min-height: min-content;
+    }
+
+    .bdm-left {
+        display: flex;
+        flex-direction: column;
+        gap: 1.8rem;
+    }
+
+    .bdm-cover {
+        position: relative;
+    }
+
+    .bdm-cover img {
+        width: 100% !important;
+        height: 380px !important;
+        object-fit: cover !important;
+        border-radius: 16px !important;
+        box-shadow: 0 20px 40px -10px rgba(0,0,0,0.25) !important;
+        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .bdm-cover img:hover {
+        transform: scale(1.04) translateY(-5px);
+    }
+    
+    .bdm-no-img {
+        width: 100% !important;
+        height: 380px !important;
+        border-radius: 16px !important;
+        background: linear-gradient(135deg, #f0f4f8, #e2e8f0) !important;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.05) !important;
+        display: flex; justify-content: center; align-items: center;
+        font-size: 5rem; color: #cbd5e1;
+    }
+
+    .bdm-actions form {
+        width: 100%;
+        margin-bottom: 0.8rem;
+    }
+
+    .bdm-btn {
+        width: 100%;
+        padding: 1rem !important;
+        border-radius: 12px !important;
+        font-size: 1rem !important;
+        font-weight: 700 !important;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        border: none !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.6rem;
+        cursor: pointer;
+    }
+    .bdm-btn:active {
+        transform: scale(0.96) !important;
+    }
+
+    .bdm-btn--buy { background: #00B4D8 !important; color: #fff !important; box-shadow: 0 4px 15px rgba(0,180,216,0.3) !important; }
+    .bdm-btn--buy:hover { background: #0096b4 !important; transform: translateY(-3px) !important; box-shadow: 0 8px 20px rgba(0,180,216,0.4) !important; }
+    
+    .bdm-btn--borrow { background: #1a1a2e !important; color: #fff !important; box-shadow: 0 4px 15px rgba(26,26,46,0.3) !important; }
+    .bdm-btn--borrow:hover { background: #111122 !important; transform: translateY(-3px) !important; box-shadow: 0 8px 20px rgba(26,26,46,0.4) !important; }
+
+    .bdm-title {
+        font-size: 2.4rem !important;
+        line-height: 1.2 !important;
+        margin: 0 0 0.5rem 0 !important;
+        color: #0f172a !important;
+        font-weight: 800 !important;
+    }
+    .bdm-author {
+        font-size: 1.2rem !important;
+        color: #64748b !important;
+        font-weight: 500 !important;
+        margin: 0 0 1.5rem 0 !important;
+    }
+    
+    .bdm-tag {
+        background: #f0f9ff !important;
+        color: #0369a1 !important;
+        font-weight: 600 !important;
+        border-radius: 8px !important;
+        padding: 0.4rem 0.8rem !important;
+        font-size: 0.85rem !important;
+        border: 1px solid #bae6fd !important;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+    
+    .bdm-meta { margin-bottom: 2rem !important; display:flex; flex-wrap:wrap; gap:0.6rem;}
+
+    .bdm-table {
+        margin-bottom: 2rem !important;
+        background: #f8fafc;
+        border-radius: 12px;
+        overflow: hidden;
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .bdm-table th, .bdm-table td {
+        padding: 1rem 1.2rem !important;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 0.95rem;
+    }
+    .bdm-table th { color: #64748b !important; font-weight: 600 !important; text-align: left; width: 180px; }
+    .bdm-table td { color: #334155 !important; font-weight: 500 !important; }
+    .bdm-table tr:last-child th, .bdm-table tr:last-child td { border-bottom: none; }
+
+    .bdm-desc {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 1px solid #e2e8f0;
+        margin-bottom: 2.5rem !important;
+        color: #475569 !important;
+        line-height: 1.8 !important;
+        font-size: 0.95rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+
+    .bdm-reviews__title {
+        font-size: 1.4rem !important;
+        color: #0f172a !important;
+        font-weight: 700 !important;
+        margin-bottom: 1.5rem !important;
+    }
+    
+    .bdm-textarea {
+        border: 2px solid #e2e8f0 !important;
+        border-radius: 12px !important;
+        padding: 1.2rem !important;
+        transition: all 0.3s ease !important;
+        background: #f8fafc !important;
+        font-family: inherit;
+        font-size: 0.95rem !important;
+        width: 100%;
+        min-height: 100px;
+        resize: vertical;
+    }
+    .bdm-textarea:focus {
+        border-color: #00B4D8 !important;
+        box-shadow: 0 0 0 4px rgba(0,180,216,0.1) !important;
+        outline: none !important;
+        background: #fff !important;
+    }
+
+    .bdm-review {
+        background: #ffffff;
+        border-radius: 14px;
+        padding: 1.5rem !important;
+        margin-bottom: 1.2rem !important;
+        border: 1px solid #e2e8f0 !important;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .bdm-review:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+    }
+    
+    .bdm-review__avatar {
+        background: linear-gradient(135deg, #00B4D8, #0077b6) !important;
+        box-shadow: 0 3px 8px rgba(0,180,216,0.3) !important;
+        color: white;
+        width: 44px !important; 
+        height: 44px !important;
+        font-size: 1.2rem !important;
+    }
+    
+    .bdm-stars .fa-star {
+        transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .bdm-stars .fa-star:hover {
+        transform: scale(1.2);
+    }
+
+    @@media (max-width: 768px) {
+        .bdm-box { height: 92vh !important; }
+        .bdm-wrap { grid-template-columns: 1fr !important; gap: 2rem !important; padding: 1.5rem !important; }
+        .bdm-cover { display: flex; justify-content: center; }
+        .bdm-cover img { max-width: 280px !important; height: auto !important; aspect-ratio: 2/3; }
+        .bdm-table th { width: 140px; }
+    }
+</style>
+
+<script>
+(function () {
+    var stars = document.querySelectorAll('#bdmStars .fa-star');
+    var input = document.getElementById('bdmRating');
+    if (!stars.length || !input) return;
+    stars.forEach(function (s) {
+        s.addEventListener('click', function () {
+            var v = +this.dataset.r; input.value = v;
+            stars.forEach(function (x, i) { x.classList.toggle('fas', i < v); x.classList.toggle('far', i >= v); });
+        });
+        s.addEventListener('mouseover', function () {
+            var v = +this.dataset.r;
+            stars.forEach(function (x, i) { x.classList.toggle('fas', i < v); x.classList.toggle('far', i >= v); });
+        });
+    });
+    document.getElementById('bdmStars').addEventListener('mouseleave', function () {
+        var v = +(input.value || 0);
+        stars.forEach(function (x, i) { x.classList.toggle('fas', i < v); x.classList.toggle('far', i >= v); });
+    });
+})();
+
+// Handle Add To Cart forms via AJAX explicitly
+window.handleCartSubmit = function(e, formEl) {
+    e.preventDefault();
+    var $form = $(formEl);
+    
+    var $btn = $form.find('button[type="submit"]');
+    var originalHtml = $btn.html();
+    $btn.html('<i class="fas fa-spinner fa-spin"></i> Processing...');
+    $btn.prop('disabled', true);
+
+    $.ajax({
+        type: $form.attr('method'),
+        url: $form.attr('action'),
+        data: $form.serialize() + '&isAjax=true',
+        success: function(res) {
+            $btn.html(originalHtml);
+            $btn.prop('disabled', false);
+
+            var isHtml = typeof res === 'string';
+            var isLoginRedirect = isHtml && res.indexOf('/Account/Login') !== -1;
+
+            if (isLoginRedirect) {
+                window.location.href = '/Account/Login';
+                return;
+            }
+
+            if ((res && res.success) || isHtml) {
+                var isBorrow = $form.find('input[name="isBorrow"]').val() === "true";
+                var defaultMsg = isBorrow ? "The book has been added to your borrow cart!" : "The book has been added to your purchase cart!";
+                var finalMsg = res.message ? res.message : defaultMsg;
+
+                // Show success message inside the modal actions area
+                var $msg = $('<div style="padding:0.8rem; margin-top:0.5rem; margin-bottom:0.8rem; background:#d1fae5; color:#065f46; border-radius:12px; font-weight:600; text-align:center; font-size:0.9rem; border:1px solid #34d399; box-shadow: 0 4px 6px rgba(0,0,0,0.05);"><i class="fas fa-check-circle"></i> ' + finalMsg + '</div>');
+                // Remove previous messages if any
+                $('.bdm-actions > div[style*="d1fae5"]').remove();
+                $form.before($msg);
+                
+                // Keep the success message visible
+                setTimeout(function() { 
+                    $msg.fadeOut(400, function(){ $(this).remove(); }); 
+                }, 4000);
+
+                // Update global cart icon from Index.cshtml
+                if (typeof updateCartIcon === 'function') {
+                    updateCartIcon();
+                }
+            } else {
+                // Not JSON or Server Failed
+                alert("Server returned unrecognized response. Please try again or refresh.");
+            }
+        },
+        error: function(err) {
+            $btn.html(originalHtml);
+            $btn.prop('disabled', false);
+            alert("Network error. Please try again.");
+            console.error(err);
+        }
+    });
+    
+    return false;
+};
+</script>

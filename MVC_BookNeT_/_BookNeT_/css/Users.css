@@ -1,0 +1,8 @@
+﻿body {
+    /* Margin bottom by footer height */
+    margin-bottom: 60px;
+    background-image: url('/Images/Home/Background_Book.png');
+    background-size: cover; /* מתואם לגודל המסך */
+    background-position: center; /* מיקום התמונה במרכז */
+    background-repeat: no-repeat; /* לא לחזור על התמונה */
+}

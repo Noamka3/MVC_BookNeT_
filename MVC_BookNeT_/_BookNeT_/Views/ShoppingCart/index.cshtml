@@ -1,0 +1,557 @@
+@model IEnumerable<_BookNeT_.Models.ShoppingCart>
+
+<div class="sc-page">
+
+    <!-- Header -->
+    <div class="sc-hero">
+        <div class="sc-hero__inner">
+            <div class="sc-hero__icon"><i class="fas fa-shopping-cart"></i></div>
+            <h1 class="sc-hero__title">Shopping Cart</h1>
+            @if (Model != null && Model.Any())
+            {
+                <span class="sc-hero__badge">@Model.Count() item@(Model.Count() != 1 ? "s" : "")</span>
+            }
+        </div>
+    </div>
+
+    @if (Model == null || !Model.Any())
+    {
+        <!-- Empty State -->
+        <div class="sc-empty">
+            <div class="sc-empty__visual">
+                <div class="sc-empty__circle">
+                    <i class="fas fa-book-open"></i>
+                </div>
+            </div>
+            <h2 class="sc-empty__title">Your cart is empty</h2>
+            <p class="sc-empty__sub">Looks like you haven't added any books yet.<br />Explore our library and find your next great read.</p>
+            <a href="@Url.Action("Index", "Library")" class="sc-btn sc-btn--primary">
+                <i class="fas fa-compass"></i> Browse Library
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="sc-layout">
+
+            <!-- Items Column -->
+            <div class="sc-items">
+                @foreach (var item in Model)
+                {
+                    var itemPrice = item.IsBorrow ? item.Books.BorrowPrice.GetValueOrDefault() : item.Books.PurchasePrice.GetValueOrDefault();
+                    var itemTotal = itemPrice * item.Quantity;
+
+                    <div class="sc-card" data-cart-id="@item.CartID" data-price="@itemPrice"
+                         data-borrow-price="@item.Books.BorrowPrice.GetValueOrDefault()"
+                         data-purchase-price="@item.Books.PurchasePrice.GetValueOrDefault()">
+
+                        <!-- Book Cover -->
+                        <div class="sc-card__cover">
+                            @if (!string.IsNullOrEmpty(item.Books.ImageUrl))
+                            {
+                                <img src="@item.Books.ImageUrl" alt="@item.Books.Title" />
+                            }
+                            else
+                            {
+                                <div class="sc-card__cover-placeholder">
+                                    <i class="fas fa-book"></i>
+                                </div>
+                            }
+                        </div>
+
+                        <!-- Book Info -->
+                        <div class="sc-card__info">
+                            <h3 class="sc-card__title" dir="auto">@item.Books.Title</h3>
+                            <p class="sc-card__author" dir="auto"><i class="fas fa-pen-nib"></i> @item.Books.Author</p>
+
+                            <!-- Type Toggle -->
+                            <form method="post" action="@Url.Action("UpdateType", "ShoppingCart")" class="sc-type-form">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="cartId" value="@item.CartID" />
+                                <div class="sc-type-toggle">
+                                    <button type="submit" name="type" value="Purchase"
+                                            class="sc-type-btn @(!item.IsBorrow ? "active" : "")">
+                                        <i class="fas fa-shopping-bag"></i> Purchase
+                                    </button>
+                                    @if (item.Books.IsBorrowable.HasValue && item.Books.IsBorrowable.Value)
+                                    {
+                                        <button type="submit" name="type" value="Borrow"
+                                                class="sc-type-btn @(item.IsBorrow ? "active" : "")">
+                                            <i class="fas fa-bookmark"></i> Borrow
+                                        </button>
+                                    }
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Price + Controls -->
+                        <div class="sc-card__controls">
+                            <div class="sc-unit-price" dir="ltr">&#8362;@itemPrice.ToString("F2")</div>
+
+                            <div class="sc-qty">
+                                <button type="button" class="sc-qty__btn sc-qty__btn--minus">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                                <input type="number" class="sc-qty__input" value="@item.Quantity" min="1" />
+                                <button type="button" class="sc-qty__btn sc-qty__btn--plus">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+
+                            <div class="sc-card__row-total sc-item-total" dir="ltr">&#8362;@itemTotal.ToString("F2")</div>
+                        </div>
+
+                        <!-- Remove -->
+                        <form method="post" action="@Url.Action("RemoveFromCart", "ShoppingCart")" class="sc-remove-form">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="cartItemId" value="@item.CartID" />
+                            <button type="submit" class="sc-remove-btn" title="Remove item">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </form>
+                    </div>
+                }
+
+                <!-- Bottom Actions -->
+                <div class="sc-bottom-actions">
+                    <a href="@Url.Action("Index", "Library")" class="sc-btn sc-btn--ghost">
+                        <i class="fas fa-arrow-left"></i> Continue Shopping
+                    </a>
+                </div>
+            </div>
+
+            <!-- Summary Column -->
+            <div class="sc-summary">
+                <div class="sc-summary__card">
+                    <h2 class="sc-summary__title">Order Summary</h2>
+
+                    <div class="sc-summary__lines" id="summary-lines">
+                        @foreach (var item in Model)
+                        {
+                            var p = (item.IsBorrow ? item.Books.BorrowPrice : item.Books.PurchasePrice).GetValueOrDefault();
+                            <div class="sc-summary__line">
+                                <span class="sc-summary__line-name">@item.Books.Title</span>
+                                <span class="sc-summary__line-price" dir="ltr">&#8362;@((p * item.Quantity).ToString("F2"))</span>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="sc-summary__divider"></div>
+
+                    <div class="sc-summary__total">
+                        <span>Total</span>
+                        <span class="sc-grand-total" dir="ltr">
+                            &#8362;@Model.Sum(i => (i.IsBorrow ? i.Books.BorrowPrice : i.Books.PurchasePrice).GetValueOrDefault() * i.Quantity).ToString("F2")
+                        </span>
+                    </div>
+
+                    <a href="@Url.Action("Checkout", "Payment")" class="sc-btn sc-btn--primary sc-btn--full">
+                        Proceed to Checkout <i class="fas fa-arrow-right"></i>
+                    </a>
+
+                    <div class="sc-trust">
+                        <div class="sc-trust__item"><i class="fas fa-shield-alt"></i> Secure Payment</div>
+                        <div class="sc-trust__item"><i class="fas fa-undo"></i> Easy Returns</div>
+                        <div class="sc-trust__item"><i class="fas fa-bolt"></i> Instant Access</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    }
+</div>
+
+<style>
+/* ============================================================
+   SHOPPING CART — Premium Design
+   Colors aligned with _Layout.cshtml
+   ============================================================ */
+
+:root {
+    --sc-primary:   #00B4D8;
+    --sc-primary-d: #0096b7;
+    --sc-dark:      #1a1a2e;
+    --sc-cream:     #f8f5f0;
+    --sc-cream2:    #f3f2ec;
+    --sc-gold:      #f0a500;
+    --sc-text:      #2d2d2d;
+    --sc-muted:     #6b7280;
+    --sc-danger:    #e05252;
+    --sc-white:     #ffffff;
+    --sc-shadow:    0 8px 32px rgba(0,0,0,0.09);
+    --sc-radius:    16px;
+    --sc-font:      'Inter', sans-serif;
+    --sc-serif:     'Playfair Display', serif;
+}
+
+/* PAGE */
+.sc-page {
+    min-height: 80vh;
+    background: var(--sc-cream);
+    padding: 0 0 60px;
+    font-family: var(--sc-font);
+    color: var(--sc-text);
+}
+
+/* ── HERO ── */
+.sc-hero {
+    background: linear-gradient(135deg, var(--sc-dark) 0%, #16213e 60%, #0f3460 100%);
+    padding: 48px 24px 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+.sc-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 70% 50%, rgba(0,180,216,.18) 0%, transparent 70%);
+}
+.sc-hero__inner { position: relative; z-index: 1; }
+.sc-hero__icon {
+    width: 64px; height: 64px;
+    background: rgba(0,180,216,.18);
+    border: 2px solid rgba(0,180,216,.4);
+    border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 1.6rem; color: var(--sc-primary);
+    margin-bottom: 14px;
+}
+.sc-hero__title {
+    font-family: var(--sc-serif);
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0 0 10px;
+    letter-spacing: .5px;
+}
+.sc-hero__badge {
+    display: inline-block;
+    background: rgba(0,180,216,.25);
+    border: 1px solid rgba(0,180,216,.5);
+    color: var(--sc-primary);
+    font-size: .78rem;
+    font-weight: 600;
+    padding: 4px 14px;
+    border-radius: 20px;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+}
+
+/* ── EMPTY STATE ── */
+.sc-empty {
+    text-align: center;
+    padding: 80px 20px;
+}
+.sc-empty__visual { margin-bottom: 28px; }
+.sc-empty__circle {
+    width: 110px; height: 110px;
+    background: linear-gradient(135deg, #e8f7fb, #d0f0f8);
+    border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 2.8rem; color: var(--sc-primary);
+    box-shadow: 0 0 0 16px rgba(0,180,216,.08);
+}
+.sc-empty__title {
+    font-family: var(--sc-serif);
+    font-size: 1.9rem;
+    color: var(--sc-dark);
+    margin: 0 0 10px;
+}
+.sc-empty__sub { color: var(--sc-muted); font-size: .95rem; line-height: 1.7; margin: 0 0 28px; }
+
+/* ── LAYOUT (2-col) ── */
+.sc-layout {
+    max-width: 1200px;
+    margin: 40px auto 0;
+    padding: 0 24px;
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 28px;
+    align-items: start;
+}
+@@media (max-width: 900px) {
+    .sc-layout { grid-template-columns: 1fr; }
+    .sc-summary { order: -1; }
+}
+
+/* ── ITEM CARD ── */
+.sc-card {
+    background: var(--sc-white);
+    border-radius: var(--sc-radius);
+    box-shadow: var(--sc-shadow);
+    padding: 20px;
+    display: grid;
+    grid-template-columns: 90px 1fr auto 40px;
+    gap: 20px;
+    align-items: center;
+    margin-bottom: 16px;
+    transition: transform .2s, box-shadow .2s;
+    position: relative;
+    overflow: hidden;
+    direction: ltr;
+}
+.sc-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 4px;
+    background: var(--sc-primary);
+    border-radius: 4px 0 0 4px;
+}
+.sc-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.13);
+}
+@@media (max-width: 700px) {
+    .sc-card { grid-template-columns: 70px 1fr; grid-template-rows: auto auto; }
+    .sc-card__controls { grid-column: 1 / -1; }
+    .sc-remove-form { position: absolute; top: 14px; right: 14px; }
+}
+
+/* Cover */
+.sc-card__cover { width: 90px; height: 130px; border-radius: 8px; overflow: hidden; flex-shrink: 0; }
+.sc-card__cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.sc-card__cover-placeholder {
+    width: 100%; height: 100%;
+    background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem; color: var(--sc-primary);
+    border-radius: 8px;
+}
+
+/* Info */
+.sc-card__info { min-width: 0; }
+.sc-card__title {
+    font-family: var(--sc-serif);
+    font-size: 1.08rem; font-weight: 700;
+    color: var(--sc-dark);
+    margin: 0 0 4px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.sc-card__author { font-size: .82rem; color: var(--sc-muted); margin: 0 0 14px; }
+.sc-card__author i { margin-right: 4px; }
+
+/* Type Toggle */
+.sc-type-form { display: inline-flex; }
+.sc-type-toggle {
+    display: inline-flex;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 8px;
+    overflow: hidden;
+}
+.sc-type-btn {
+    padding: 6px 14px;
+    font-size: .8rem; font-weight: 600;
+    font-family: var(--sc-font);
+    background: transparent;
+    border: none; cursor: pointer;
+    color: var(--sc-muted);
+    transition: background .2s, color .2s;
+    display: flex; align-items: center; gap: 5px;
+}
+.sc-type-btn.active {
+    background: var(--sc-primary);
+    color: #fff;
+}
+.sc-type-btn:hover:not(.active) { background: #f0f9ff; color: var(--sc-primary); }
+
+/* Controls */
+.sc-card__controls {
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+    min-width: 120px;
+}
+.sc-unit-price {
+    font-size: .85rem; color: var(--sc-muted); text-align: center;
+    direction: ltr; unicode-bidi: bidi-override;
+}
+
+/* Quantity */
+.sc-qty {
+    display: flex; align-items: center;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    overflow: hidden;
+}
+.sc-qty__btn {
+    width: 32px; height: 32px;
+    background: none; border: none;
+    color: var(--sc-muted); cursor: pointer;
+    font-size: .75rem;
+    transition: background .15s, color .15s;
+    display: flex; align-items: center; justify-content: center;
+}
+.sc-qty__btn:hover { background: #f0f9ff; color: var(--sc-primary); }
+.sc-qty__input {
+    width: 42px; height: 32px;
+    border: none; border-left: 1.5px solid #e5e7eb; border-right: 1.5px solid #e5e7eb;
+    text-align: center; font-size: .9rem; font-weight: 600;
+    background: transparent; color: var(--sc-dark);
+    -moz-appearance: textfield;
+}
+.sc-qty__input::-webkit-outer-spin-button,
+.sc-qty__input::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+/* Row Total */
+.sc-card__row-total {
+    font-size: 1rem; font-weight: 700;
+    color: var(--sc-dark);
+    direction: ltr; unicode-bidi: bidi-override;
+}
+
+/* Remove */
+.sc-remove-btn {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: #fff5f5;
+    border: 1.5px solid #fecaca;
+    color: var(--sc-danger);
+    font-size: .8rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .2s, transform .2s;
+}
+.sc-remove-btn:hover { background: #fee2e2; transform: scale(1.1); }
+
+/* Bottom Actions */
+.sc-bottom-actions { display: flex; justify-content: flex-start; margin-top: 8px; }
+
+/* ── SUMMARY CARD ── */
+.sc-summary__card {
+    background: var(--sc-white);
+    border-radius: var(--sc-radius);
+    box-shadow: var(--sc-shadow);
+    padding: 28px;
+    position: sticky;
+    top: 88px;
+}
+.sc-summary__title {
+    font-family: var(--sc-serif);
+    font-size: 1.3rem; font-weight: 700;
+    color: var(--sc-dark);
+    margin: 0 0 20px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid var(--sc-cream);
+}
+.sc-summary__lines { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+.sc-summary__line {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-size: .88rem;
+}
+.sc-summary__line-name {
+    color: var(--sc-muted);
+    max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.sc-summary__line-price { font-weight: 600; color: var(--sc-text); direction: ltr; unicode-bidi: bidi-override; }
+.sc-summary__divider { height: 1px; background: var(--sc-cream); margin: 8px 0 16px; }
+.sc-summary__total {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-size: 1.05rem; font-weight: 700; color: var(--sc-dark);
+    margin-bottom: 22px;
+}
+.sc-grand-total { font-size: 1.4rem; color: var(--sc-primary); direction: ltr; unicode-bidi: bidi-override; }
+
+/* ── TRUST BADGES ── */
+.sc-trust {
+    display: flex; flex-direction: column; gap: 8px; margin-top: 18px;
+    padding-top: 18px; border-top: 1px solid var(--sc-cream);
+}
+.sc-trust__item {
+    font-size: .78rem; color: var(--sc-muted);
+    display: flex; align-items: center; gap: 8px;
+}
+.sc-trust__item i { color: var(--sc-primary); width: 14px; text-align: center; }
+
+/* ── BUTTONS ── */
+.sc-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 12px 22px;
+    border-radius: 10px;
+    font-family: var(--sc-font);
+    font-size: .9rem; font-weight: 600;
+    text-decoration: none; cursor: pointer;
+    border: none; transition: all .2s;
+}
+.sc-btn--primary {
+    background: var(--sc-primary);
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(0,180,216,.35);
+}
+.sc-btn--primary:hover {
+    background: var(--sc-primary-d);
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(0,180,216,.45);
+    text-decoration: none;
+}
+.sc-btn--ghost {
+    background: transparent;
+    color: var(--sc-muted);
+    border: 1.5px solid #e5e7eb;
+}
+.sc-btn--ghost:hover { background: #f9fafb; color: var(--sc-dark); text-decoration: none; }
+.sc-btn--full { width: 100%; justify-content: center; }
+</style>
+
+@section Scripts {
+<script>
+$(document).ready(function () {
+
+    function updateGrandTotal() {
+        let total = 0;
+        $('.sc-card').each(function () {
+            const price = parseFloat($(this).data('price'));
+            const qty = parseInt($(this).find('.sc-qty__input').val()) || 1;
+            total += price * qty;
+        });
+        $('.sc-grand-total').text('\u20AA' + total.toFixed(2));
+    }
+
+    function updateItemTotal($card) {
+        const price = parseFloat($card.data('price'));
+        const qty = parseInt($card.find('.sc-qty__input').val()) || 1;
+        $card.find('.sc-item-total').text('\u20AA' + (price * qty).toFixed(2));
+        updateGrandTotal();
+    }
+
+    // Plus button
+    $(document).on('click', '.sc-qty__btn--plus', function () {
+        const $input = $(this).siblings('.sc-qty__input');
+        const val = parseInt($input.val()) + 1;
+        $input.val(val).trigger('change');
+    });
+
+    // Minus button
+    $(document).on('click', '.sc-qty__btn--minus', function () {
+        const $input = $(this).siblings('.sc-qty__input');
+        const val = parseInt($input.val()) - 1;
+        if (val >= 1) $input.val(val).trigger('change');
+    });
+
+    // Input change → AJAX
+    $(document).on('change', '.sc-qty__input', function () {
+        const $card = $(this).closest('.sc-card');
+        const qty = parseInt($(this).val());
+        const cartId = $card.data('cart-id');
+
+        $.ajax({
+            url: '@Url.Action("UpdateQuantity", "ShoppingCart")',
+            type: 'POST',
+            data: {
+                cartItemId: cartId,
+                quantity: qty,
+                __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').first().val()
+            },
+            success: function (res) {
+                if (res.success) {
+                    updateItemTotal($card);
+                } else {
+                    alert(res.message || 'Error updating quantity');
+                    location.reload();
+                }
+            },
+            error: function () { alert('Server error'); location.reload(); }
+        });
+    });
+});
+</script>
+}

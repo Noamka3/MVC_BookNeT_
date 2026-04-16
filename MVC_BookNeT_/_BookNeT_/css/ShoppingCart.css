@@ -1,0 +1,180 @@
+﻿.cart {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.cart__header {
+    margin-bottom: 2rem;
+}
+
+.cart__title {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #2d3748;
+}
+
+.cart__empty {
+    text-align: center;
+    padding: 4rem 0;
+}
+
+.cart__empty-icon {
+    font-size: 4rem;
+    color: #a0aec0;
+    margin-bottom: 1rem;
+}
+
+.cart__empty-message {
+    font-size: 1.25rem;
+    color: #4a5568;
+    margin-bottom: 2rem;
+}
+
+.cart-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.cart-table__head th {
+    background: #f7fafc;
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: #4a5568;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.cart-item {
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.cart-item td {
+    padding: 1rem;
+    vertical-align: middle;
+}
+
+.book-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.book-info__image {
+    width: 80px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 0.25rem;
+}
+
+.book-info__title {
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 0.5rem;
+}
+
+.book-info__author {
+    color: #718096;
+}
+
+.type-selector__select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.25rem;
+    background: white;
+}
+
+.quantity-control {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.quantity-control__btn {
+    padding: 0.25rem 0.5rem;
+    border: none;
+    background: #edf2f7;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.quantity-control__btn:hover {
+    background: #e2e8f0;
+}
+
+.quantity-control__input {
+    width: 60px;
+    padding: 0.25rem;
+    text-align: center;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.25rem;
+}
+
+.cart-total {
+    font-weight: 600;
+    font-size: 1.125rem;
+    color: #2d3748;
+}
+
+.cart__actions {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+.button {
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.button--primary {
+    background: #4299e1;
+    color: white;
+}
+
+.button--primary:hover {
+    background: #3182ce;
+}
+
+.button--secondary {
+    background: #718096;
+    color: white;
+}
+
+.button--secondary:hover {
+    background: #4a5568;
+}
+
+.button--danger {
+    background: #e53e3e;
+    color: white;
+    border: none;
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    cursor: pointer;
+}
+
+.button--danger:hover {
+    background: #c53030;
+}
+
+/* Hide number input spinners */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type="number"] {
+    -moz-appearance: textfield;
+}

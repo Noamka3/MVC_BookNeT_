@@ -1,0 +1,683 @@
+@model IEnumerable<_BookNeT_.Models.Books>
+
+@section styles {
+    <link rel="stylesheet" href="~/css/Library.css?v=2" />
+}
+
+<!-- ── Floating Cart ─────────────────────────── -->
+@if (Session["Email"] != null)
+{
+    <div class="lib-cart-fab">
+        <a href="@Url.Action("Index","ShoppingCart")">
+            <i class="fas fa-shopping-cart"></i>
+            <span class="lib-cart-fab__count">@ViewBag.CartCount</span>
+        </a>
+    </div>
+}
+
+<!-- ══════════════════════════════════════════
+     HERO
+══════════════════════════════════════════ -->
+<section class="lib-hero">
+    <span class="lib-hero__eyebrow">Our Collection</span>
+    <h1 class="lib-hero__title">Explore the <em>Library</em></h1>
+    <p class="lib-hero__sub">@Model.Count() books across @(ViewBag.Genres != null ? ((IEnumerable<string>)ViewBag.Genres).Count() : 0) genres — borrow or buy, anytime.</p>
+
+    <form method="get" action="@Url.Action("Index","Library")" class="lib-hero__search">
+        <input type="text" name="searchTerm" placeholder="Search by title, author..."
+               value="@Request.QueryString["searchTerm"]" id="heroSearch" autocomplete="off" />
+        <button type="submit"><i class="fas fa-search"></i></button>
+    </form>
+</section>
+
+<!-- ══════════════════════════════════════════
+     FEATURED COLLECTIONS
+══════════════════════════════════════════ -->
+<div class="lib-collections">
+    <div class="collection-card" onclick="navigateTo('/Library/BestOf2024')">
+        <img src="https://media.istockphoto.com/id/1495368614/photo/woman-relaxing-on-sofa-at-home-and-reading-book.jpg?s=612x612&w=0&k=20&c=SetOqLYVZW7JBCBAJXF7jXouY_qkeik9ni1i0nSVVNg=" alt="Best of 2024" onerror="this.style.display='none'" />
+        <div class="collection-card__overlay"></div>
+        <div class="collection-card__body">
+            <span class="collection-card__tag">Editors' Choice</span>
+            <p class="collection-card__title">Best of 2024</p>
+            <p class="collection-card__sub">Handpicked by our team</p>
+        </div>
+    </div>
+    <div class="collection-card" onclick="navigateTo('/Library/Newest')">
+        <img src="https://media.istockphoto.com/id/949118068/photo/books.jpg?s=612x612&w=0&k=20&c=1vbRHaA_aOl9tLIy6P2UANqQ27KQ_gSF-BH0sUjQ730=" alt="Newest" onerror="this.style.display='none'" />
+        <div class="collection-card__overlay"></div>
+        <div class="collection-card__body">
+            <span class="collection-card__tag">Just Added</span>
+            <p class="collection-card__title">Newest Books</p>
+            <p class="collection-card__sub">Added this week</p>
+        </div>
+    </div>
+    <div class="collection-card" onclick="navigateTo('/Library/KidsBooks')">
+        <img src="https://media.istockphoto.com/id/1805651010/photo/children-visiting-the-library.jpg?s=612x612&w=0&k=20&c=6A3PWXGcKp-v0qercMT5VF409W2kvyFUwPIpy5DadFI=" alt="Kids" onerror="this.style.display='none'" />
+        <div class="collection-card__overlay"></div>
+        <div class="collection-card__body">
+            <span class="collection-card__tag">Family</span>
+            <p class="collection-card__title">Kids' Corner</p>
+            <p class="collection-card__sub">Top children's books</p>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MAIN LAYOUT
+══════════════════════════════════════════ -->
+<div class="lib-layout">
+
+    <!-- ── Sidebar Filters ── -->
+    <aside class="lib-sidebar">
+        <h3 class="lib-sidebar__title"><i class="fas fa-sliders-h"></i> Filters</h3>
+        <form method="get" action="@Url.Action("Index","Library")" id="filterForm">
+
+            <div class="filter-group">
+                <label>Author</label>
+                <select name="author" id="author">
+                    <option value="">All Authors</option>
+                    @foreach (var a in ViewBag.Authors) { <option value="@a">@a</option> }
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>Genre</label>
+                <select name="genre" id="genre">
+                    <option value="">All Genres</option>
+                    @foreach (var g in ViewBag.Genres) { <option value="@g">@g</option> }
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>Sort By</label>
+                <select name="sortBy" id="sortDropdown">
+                    <option value="">Default</option>
+                    <option value="PriceAsc">Price: Low → High</option>
+                    <option value="PriceDesc">Price: High → Low</option>
+                    <option value="MostPurchased">Most Popular</option>
+                    <option value="YearDesc">Newest First</option>
+                    <option value="YearAsc">Oldest First</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>Publication Year</label>
+                <select name="publicationYear" id="publicationYear">
+                    <option value="">All Years</option>
+                    @for (int year = ViewBag.MaxYear; year >= ViewBag.MinYear; year--) {
+                        <option value="@year">@year</option>
+                    }
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>Purchase Method</label>
+                <select name="purchaseMethod" id="purchaseMethod">
+                    <option value="">All</option>
+                    <option value="Purchase">Purchase</option>
+                    <option value="Borrow">Borrow</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>Age Category</label>
+                <select name="ageRestriction" id="ageRestriction">
+                    <option value="">All Ages</option>
+                    <option value="3">Toddlers (0-3)</option>
+                    <option value="5">Preschool (4-5)</option>
+                    <option value="7">Early Readers (6-7)</option>
+                    <option value="8">Children (8-12)</option>
+                    <option value="12">Young Teen (12-14)</option>
+                    <option value="13">Teen & Young Adult (13-17)</option>
+                    <option value="18">Adult (18+)</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>Price Range</label>
+                <input type="range" id="priceRange" min="0" max="500" step="10" value="0"
+                       oninput="updatePriceLabel(this.value)" />
+                <div class="filter-price-label">
+                    <span id="priceLabel">&#8362;0 – &#8362;200</span>
+                </div>
+                <input type="hidden" name="minPrice" id="minPrice">
+                <input type="hidden" name="maxPrice" id="maxPrice">
+            </div>
+
+            <div class="filter-divider"></div>
+
+            <label class="filter-check">
+                <input type="checkbox" name="showDiscounted" value="true"
+                       @(Request.QueryString["showDiscounted"] == "true" ? "checked" : "") />
+                Discounted Only
+            </label>
+
+            <div class="filter-divider"></div>
+
+            <button type="submit" class="btn-filter-apply">Apply Filters</button>
+            <a href="@Url.Action("Index","Library")" class="btn-filter-clear">Clear All</a>
+        </form>
+    </aside>
+
+    <!-- ── Main Content ── -->
+    <main class="lib-main">
+        <div class="lib-results-bar">
+            <span class="lib-results-bar__count"><strong>@Model.Count()</strong> books found</span>
+        </div>
+
+        <div class="lib-grid">
+            @foreach (var book in Model)
+            {
+                bool isAvailable = ((Dictionary<int, bool>)ViewBag.BookAvailability)[book.BookID];
+
+                <div class="lib-book-card">
+                    <!-- Cover -->
+                    <div class="lib-book-card__cover">
+
+                        <!-- Badges -->
+                        <div class="lib-book-card__badges">
+                            @if (book.IsDiscounted == true && book.DiscountPercentage.HasValue)
+                            {
+                                <span class="badge-sale">@book.DiscountPercentage% OFF</span>
+                            }
+                            else { <span></span> }
+
+                            <span class="badge-age">
+                                <i class="fas fa-book-reader"></i>
+                                @{
+                                    string ageText = "All";
+                                    if (book.AgeRestriction == 3) { ageText = "0-3"; }
+                                    else if (book.AgeRestriction == 5) { ageText = "4-5"; }
+                                    else if (book.AgeRestriction == 7) { ageText = "6-7"; }
+                                    else if (book.AgeRestriction == 8) { ageText = "8-12"; }
+                                    else if (book.AgeRestriction == 12) { ageText = "12-14"; }
+                                    else if (book.AgeRestriction == 13) { ageText = "13-17"; }
+                                    else if (book.AgeRestriction == 18) { ageText = "18+"; }
+                                }
+                                @ageText
+                            </span>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(book.ImageUrl))
+                        {
+                            <img src="@book.ImageUrl" alt="@book.Title" />
+                        }
+                        else
+                        {
+                            <div class="lib-book-card__no-img"><i class="fas fa-book"></i></div>
+                        }
+
+                        <!-- Favorite -->
+                        <div class="lib-book-card__overlay">
+                            <button class="lib-fav-btn @(ViewBag.FavoriteBooks.Contains(book.BookID) ? "active" : "")"
+                                    onclick="toggleFavorite(this)" data-book-id="@book.BookID" title="Favourite">
+                                <i class="@(ViewBag.FavoriteBooks.Contains(book.BookID) ? "fas" : "far") fa-heart"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Body -->
+                    <div class="lib-book-card__body">
+                        <p class="lib-book-card__genre">@(book.Genre ?? "General")</p>
+                        <h3 class="lib-book-card__title">@book.Title</h3>
+                        <p class="lib-book-card__author">@book.Author</p>
+
+                        <div class="lib-book-card__actions">
+
+                            <!-- Details -->
+                            <button class="lib-btn lib-btn--details" onclick="openDetailsModal(@book.BookID)">
+                                <i class="fas fa-info-circle"></i> Details
+                            </button>
+
+                            @if (book.Stock > 0 && isAvailable)
+                            {
+                                <!-- Add to Cart dropdown -->
+                                <div class="lib-dropdown" id="dd-@book.BookID">
+                                    <button type="button" class="lib-btn lib-btn--cart" onclick="toggleDropdown('@book.BookID')">
+                                        <i class="fas fa-shopping-cart"></i> Add to Cart
+                                    </button>
+                                    <div class="lib-dropdown-menu">
+                                        <form method="post" action="@Url.Action("AddToCart","ShoppingCart")">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="bookId" value="@book.BookID" />
+                                            <input type="hidden" name="isBorrow" value="false" />
+                                            <button type="submit" class="lib-dropdown-item">
+                                                <i class="fas fa-shopping-bag"></i> Purchase
+                                            </button>
+                                        </form>
+                                        @if (book.IsBorrowable == true)
+                                        {
+                                            <form method="post" action="@Url.Action("AddToCart","ShoppingCart")">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="bookId" value="@book.BookID" />
+                                                <input type="hidden" name="isBorrow" value="true" />
+                                                <button type="submit" class="lib-dropdown-item">
+                                                    <i class="fas fa-book"></i> Borrow
+                                                </button>
+                                            </form>
+                                        }
+                                    </div>
+                                </div>
+
+                                <!-- Quick Purchase -->
+                                using (Html.BeginForm("QuickPurchase", "ShoppingCart", new { bookId = book.BookID }, FormMethod.Post))
+                                {
+                                    @Html.AntiForgeryToken()
+                                    if (book.IsDiscounted == true && book.DiscountPercentage.HasValue)
+                                    {
+                                        decimal dp = book.CalculateDiscountedPrice();
+                                        <button type="submit" class="lib-btn lib-btn--purchase">
+                                            <i class="fas fa-bolt"></i>
+                                            Buy <span class="lib-price--original">&#8362;@book.PurchasePrice.Value.ToString("0.00")</span>
+                                            <span class="lib-price--sale">&#8362;@dp.ToString("0.00")</span>
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button type="submit" class="lib-btn lib-btn--purchase">
+                                            <i class="fas fa-bolt"></i> Buy &#8362;@book.PurchasePrice.Value.ToString("0.00")
+                                        </button>
+                                    }
+                                }
+
+                                <!-- Quick Borrow -->
+                                if (book.IsBorrowable == true)
+                                {
+                                    using (Html.BeginForm("QuickBorrow", "ShoppingCart", new { bookId = book.BookID }, FormMethod.Post))
+                                    {
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="lib-btn lib-btn--borrow">
+                                            <i class="fas fa-book"></i> Borrow &#8362;@book.BorrowPrice
+                                        </button>
+                                    }
+                                }
+
+                                <!-- Admin: View Waiting List -->
+                                if (book.IsBorrowable == true && book.WaitingList.Any() && ViewBag.IsAdmin != null && (bool)ViewBag.IsAdmin)
+                                {
+                                    <button type="button" class="lib-btn lib-btn--info show-waiting-list-btn" data-book-id="@book.BookID">
+                                        <i class="fas fa-list"></i> Waiting List
+                                    </button>
+                                }
+                            }
+                            else
+                            {
+                                <div class="lib-out-of-stock">
+                                    <i class="fas fa-exclamation-circle"></i> Out of Stock
+                                </div>
+
+                                if (book.IsBorrowable == true)
+                                {
+                                    if (book.WaitingList.Any(w => w.UserID == (int?)Session["UserID"]))
+                                    {
+                                        using (Html.BeginForm("RemoveFromWaitingList", "Library", new { bookId = book.BookID }, FormMethod.Post))
+                                        {
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="lib-btn lib-btn--danger">
+                                                <i class="fas fa-clock"></i> Leave Waiting List
+                                            </button>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        using (Html.BeginForm("JoinWaitingList", "Library", new { bookId = book.BookID }, FormMethod.Post))
+                                        {
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="lib-btn lib-btn--waiting">
+                                                <i class="fas fa-clock"></i> Join Waiting List
+                                            </button>
+                                        }
+                                    }
+
+                                    <button type="button" class="lib-btn lib-btn--info show-waiting-list-btn" data-book-id="@book.BookID">
+                                        <i class="fas fa-list"></i> View Queue
+                                    </button>
+                                }
+                            }
+
+                            @if (TempData["SuccessMessage"] != null && TempData["BookID"] != null && (int)TempData["BookID"] == book.BookID)
+                            {
+                                <div id="cart-message-@book.BookID" class="lib-alert">@TempData["SuccessMessage"]</div>
+                            }
+
+                        </div><!-- /actions -->
+                    </div><!-- /body -->
+                </div><!-- /card -->
+            }
+        </div><!-- /grid -->
+    </main>
+</div><!-- /layout -->
+
+<!-- Waiting List Modal -->
+<div class="custom-modal" id="waitingListModal">
+    <div class="custom-modal-dialog">
+        <div class="custom-modal-header">
+            <h5 class="custom-modal-title">Waiting List</h5>
+            <button class="custom-modal-close" onclick="closeCustomModal()">&#x2715;</button>
+        </div>
+        <div class="custom-modal-body">
+            <div class="waiting-list-info">
+                <div class="waiting-count"><h4><i class="fas fa-users"></i> Queue Status</h4><p class="queue-size"></p></div>
+                <div class="waiting-list-details">
+                    <h5><i class="far fa-clock"></i> Expected Wait Times</h5>
+                    <ul class="list-group waiting-list-items"></ul>
+                    <div style="margin-top:.75rem">
+                        <small style="color:var(--muted)"><i class="fas fa-info-circle"></i> Standard borrow period is 14 days.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══ Book Details Modal ══ -->
+<div id="bookDetailsModal" class="bdm-overlay" onclick="if(event.target===this)closeBDM()">
+    <div class="bdm-box">
+        <button class="bdm-close" onclick="closeBDM()">&#x2715;</button>
+        <div class="bdm-loading"><i class="fas fa-spinner fa-spin"></i></div>
+        <div class="bdm-content"></div>
+    </div>
+</div>
+
+<style>
+    /* ── overlay ── */
+    .bdm-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,.55);
+        z-index: 2000;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        backdrop-filter: blur(3px);
+    }
+    .bdm-overlay.open { display: flex; }
+
+    .bdm-box {
+        background: #fff;
+        border-radius: 16px;
+        width: 100%;
+        max-width: 900px;
+        max-height: 88vh;
+        overflow-y: auto;
+        position: relative;
+        box-shadow: 0 24px 60px rgba(0,0,0,.25);
+        animation: bdmIn .3s cubic-bezier(.16,1,.3,1);
+    }
+    @@keyframes bdmIn {
+        from { opacity:0; transform: scale(.93) translateY(16px); }
+        to   { opacity:1; transform: scale(1)  translateY(0); }
+    }
+
+    .bdm-close {
+        position: sticky;
+        top: 1rem;
+        float: right;
+        margin: 1rem 1rem 0 0;
+        background: #f3f2ec;
+        border: none;
+        width: 34px; height: 34px;
+        border-radius: 50%;
+        font-size: 1rem;
+        cursor: pointer;
+        z-index: 10;
+        transition: background .2s;
+    }
+    .bdm-close:hover { background: #e0e0e0; }
+
+    .bdm-loading {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 4rem;
+        font-size: 2rem;
+        color: #00B4D8;
+    }
+    .bdm-loading.hidden { display: none; }
+
+    /* ── inner layout ── */
+    .bdm-wrap {
+        display: grid;
+        grid-template-columns: 200px 1fr;
+        gap: 1.5rem;
+        padding: 1.5rem 1.8rem 1.8rem;
+        clear: both;
+    }
+
+    /* cover */
+    .bdm-cover img {
+        width: 200px;
+        height: 280px;
+        object-fit: cover;
+        border-radius: 10px;
+        box-shadow: 0 6px 20px rgba(0,0,0,.15);
+    }
+    .bdm-no-img {
+        width: 200px; height: 280px;
+        background: #f3f2ec;
+        border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 3rem; color: #ccc;
+    }
+
+    /* actions */
+    .bdm-actions { margin-top: 1rem; display: flex; flex-direction: column; gap: .5rem; }
+    .bdm-btn {
+        display: flex; align-items: center; justify-content: center; gap: .4rem;
+        padding: .6rem .8rem;
+        border: none; border-radius: 8px;
+        font-size: .82rem; font-weight: 600;
+        cursor: pointer; transition: filter .2s, transform .15s;
+        width: 100%;
+    }
+    .bdm-btn:hover { filter: brightness(.92); transform: translateY(-1px); }
+    .bdm-btn--buy     { background: #00B4D8; color: #fff; }
+    .bdm-btn--borrow  { background: #1a1a2e; color: #fff; }
+    .bdm-btn--wait    { background: #f0c14b; color: #333; }
+    .bdm-btn--danger  { background: #dc3545; color: #fff; }
+    .bdm-btn--submit  { background: #00B4D8; color: #fff; margin-top: .4rem; }
+    .bdm-out-of-stock { color: #dc3545; font-size: .82rem; font-weight: 600; text-align: center; }
+
+    /* right col */
+    .bdm-title  { font-size: 1.5rem; font-weight: 700; margin: 0 0 .2rem; color: #1a1a2e; }
+    .bdm-author { color: #666; margin: 0 0 .8rem; font-size: .9rem; }
+
+    .bdm-meta { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: 1rem; }
+    .bdm-tag  {
+        background: #f3f2ec; border-radius: 20px;
+        padding: .25rem .7rem; font-size: .75rem; color: #555;
+    }
+
+    .bdm-table { width: 100%; border-collapse: collapse; font-size: .83rem; margin-bottom: .8rem; }
+    .bdm-table th { color: #888; font-weight: 500; width: 170px; padding: .35rem 0; }
+    .bdm-table td { color: #333; padding: .35rem 0; border-bottom: 1px solid #f0f0f0; }
+
+    .bdm-desc { font-size: .84rem; line-height: 1.7; color: #444; margin-bottom: 1rem;
+                max-height: 120px; overflow-y: auto; padding-right: .3rem; }
+
+    /* reviews */
+    .bdm-reviews__title { font-size: 1rem; font-weight: 700; margin-bottom: .8rem; border-top: 1px solid #eee; padding-top: .8rem; }
+    .bdm-review-form { margin-bottom: 1rem; }
+    .bdm-stars { font-size: 1.3rem; color: #f0c14b; margin-bottom: .4rem; cursor: pointer; }
+    .bdm-textarea {
+        width: 100%; padding: .5rem .7rem;
+        border: 1px solid #ddd; border-radius: 8px;
+        font-size: .83rem; resize: vertical; min-height: 70px;
+    }
+
+    .bdm-review { padding: .7rem 0; border-bottom: 1px solid #f0f0f0; }
+    .bdm-review__header {
+        display: flex; align-items: center; gap: .6rem; margin-bottom: .3rem; position: relative;
+    }
+    .bdm-review__avatar {
+        width: 32px; height: 32px; border-radius: 50%;
+        background: #00B4D8; color: #fff;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 700; font-size: .85rem; flex-shrink: 0;
+    }
+    .bdm-review__header strong { font-size: .85rem; display: block; }
+    .bdm-review__header small  { color: #999; font-size: .75rem; }
+    .bdm-review__stars { font-size: .8rem; color: #f0c14b; margin-bottom: .2rem; }
+    .bdm-review__text  { font-size: .83rem; color: #444; margin: 0; }
+    .bdm-del-form { margin: 0; margin-left: auto; }
+    .bdm-del-btn  { background: none; border: none; color: #dc3545; cursor: pointer; font-size: .85rem; }
+
+    @@media (max-width: 600px) {
+        .bdm-wrap { grid-template-columns: 1fr; }
+        .bdm-cover img, .bdm-no-img { width: 100%; height: 200px; }
+    }
+</style>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    // ── Book Details Modal ────────────────────
+    function openDetailsModal(bookId) {
+        var modal   = document.getElementById('bookDetailsModal');
+        var loading = modal.querySelector('.bdm-loading');
+        var content = modal.querySelector('.bdm-content');
+        content.innerHTML = '';
+        loading.classList.remove('hidden');
+        modal.classList.add('open');
+        document.body.style.overflow = 'hidden';
+
+        $.get('/Library/DetailsModal/' + bookId, function (html) {
+            loading.classList.add('hidden');
+            content.innerHTML = html;
+            // run any inline scripts in the partial
+            content.querySelectorAll('script').forEach(function (s) {
+                var ns = document.createElement('script');
+                ns.textContent = s.textContent;
+                document.body.appendChild(ns);
+            });
+        }).fail(function () {
+            loading.classList.add('hidden');
+            content.innerHTML = '<p style="padding:2rem;color:red">Failed to load details.</p>';
+        });
+    }
+
+    function closeBDM() {
+        var modal = document.getElementById('bookDetailsModal');
+        modal.classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeBDM();
+    });
+
+    // ── Navigation with transition ────────────
+    function navigateTo(url) {
+        var ov = document.getElementById('page-overlay');
+        if (ov) {
+            ov.style.transition = 'transform .42s cubic-bezier(.76,0,.24,1)';
+            ov.style.transformOrigin = 'right';
+            ov.style.transform = 'scaleX(1)';
+            setTimeout(function () { window.location.href = url; }, 430);
+        } else {
+            window.location.href = url;
+        }
+    }
+
+    // ── Dropdown ─────────────────────────────────
+    function toggleDropdown(bookId) {
+        var dd = document.getElementById('dd-' + bookId);
+        var isOpen = dd.classList.contains('open');
+        document.querySelectorAll('.lib-dropdown.open').forEach(function(el) { el.classList.remove('open'); });
+        if (!isOpen) dd.classList.add('open');
+    }
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.lib-dropdown')) {
+            document.querySelectorAll('.lib-dropdown.open').forEach(function(el) { el.classList.remove('open'); });
+        }
+    });
+
+    // ── Filters: restore from URL ─────────────────
+    document.addEventListener('DOMContentLoaded', function () {
+        var p = new URLSearchParams(window.location.search);
+        ['sortDropdown','author','genre','purchaseMethod','ageRestriction','publicationYear'].forEach(function(id) {
+            var key = id === 'sortDropdown' ? 'sortBy' : id;
+            var el = document.getElementById(id);
+            if (el && p.get(key)) el.value = p.get(key);
+        });
+        var heroSearch = document.getElementById('heroSearch');
+        if (heroSearch && p.get('searchTerm')) heroSearch.value = p.get('searchTerm');
+        var minPrice = p.get('minPrice');
+        if (minPrice) { document.getElementById('priceRange').value = minPrice; updatePriceLabel(minPrice); }
+
+        // Success messages
+        document.querySelectorAll("[id^='cart-message-']").forEach(function(el) {
+            el.style.display = 'block';
+            setTimeout(function() { el.style.display = 'none'; }, 5000);
+        });
+    });
+
+    function updatePriceLabel(value) {
+        var min = Math.min(value, 150);
+        var max = Math.max(parseInt(value) + 50, 50);
+        document.getElementById('priceLabel').textContent = '\u20aa' + min + ' \u2013 \u20aa' + max;
+        document.getElementById('minPrice').value = min;
+        document.getElementById('maxPrice').value = max;
+    }
+
+    // ── Cart count ────────────────────────────────
+    function updateCartIcon() {
+        $.get('@Url.Action("GetCartCount","ShoppingCart")', function(r) {
+            $('.lib-cart-fab__count').text(r.count || 0);
+        });
+    }
+    $(function() { updateCartIcon(); });
+
+    // ── Favorites ─────────────────────────────────
+    function toggleFavorite(btn) {
+        var bookId = $(btn).data('book-id');
+        $.ajax({ url: '/Library/ToggleFavorite', type: 'POST', data: { bookId: bookId },
+            success: function(r) {
+                if (r.success) {
+                    $(btn).toggleClass('active');
+                    $(btn).find('i').toggleClass('far fas');
+                }
+            }
+        });
+    }
+
+    // ── Modal ─────────────────────────────────────
+    function showModal(title, content) {
+        $('.custom-modal-title').text(title);
+        $('.custom-modal-body').html(content);
+        $('#waitingListModal').addClass('show');
+    }
+    function closeCustomModal() { $('#waitingListModal').removeClass('show'); }
+    $(document).on('click', '.custom-modal', function(e) {
+        if ($(e.target).hasClass('custom-modal')) closeCustomModal();
+    });
+
+    $(document).on('click', '.show-waiting-list-btn', function() {
+        var bookId = $(this).data('book-id');
+        $.get('/Library/GetWaitingListInfo', { bookId: bookId }).done(function(r) {
+            if (!r.success) { alert(r.message || 'Error'); return; }
+            var html = '<div class="waiting-count"><h4><i class="fas fa-users"></i> ' + r.waitingCount + ' waiting</h4></div><ul class="list-group">';
+            r.waitingList.forEach(function(u) {
+                html += '<li class="list-group-item"><div><strong>#' + u.Position + ':</strong> ' + u.UserName + '</div>';
+                html += '<div style="display:flex;align-items:center;gap:8px"><span class="estimated-time"><i class="far fa-clock"></i> ~' + u.EstimatedAvailability + ' days</span>';
+                if (r.isAdmin) html += '<button onclick="removeUserFromWaitingList(' + bookId + ',' + u.UserID + ')" class="remove-user-btn"><i class="fas fa-times"></i></button>';
+                html += '</div></li>';
+            });
+            html += '</ul><div style="margin-top:.75rem"><small style="color:#888"><i class="fas fa-info-circle"></i> Standard borrow is 30 days.</small></div>';
+            showModal('Waiting List', html);
+        }).fail(function() { alert('Server error.'); });
+    });
+
+    function removeUserFromWaitingList(bookId, userId) {
+        if (!confirm('Remove this user from the waiting list?')) return;
+        $.ajax({
+            url: '/Library/RemoveUserFromWaitingList', type: 'POST',
+            data: { bookId: bookId, userId: userId, __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').first().val() },
+            success: function(r) {
+                if (r.success) $('.show-waiting-list-btn[data-book-id="' + bookId + '"]').click();
+                else alert(r.message || 'Failed.');
+            }
+        });
+    }
+</script>

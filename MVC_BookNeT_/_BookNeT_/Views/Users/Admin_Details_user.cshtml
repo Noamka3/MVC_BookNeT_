@@ -1,0 +1,27 @@
+﻿<form id="userDetailsForm" method="post">
+    <input type="hidden" name="UserID" value="@Model.UserID" />  ה-ID של המשתמש 
+
+    <div>
+        <label for="FirstName">First Name:</label>
+        <p id="FirstName">@Model.FirstName</p>
+    </div>
+    <div>
+        <label for="LastName">Last Name:</label>
+        <p id="LastName">@Model.LastName</p>
+    </div>
+    <div>
+        <label for="Email">Email:</label>
+        <p id="Email">@Model.Email</p>
+    </div>
+    <div>
+        <label for="Phone">Phone:</label>
+        <p id="Phone">@Model.Phone</p>
+    </div>
+    <div>
+        <label for="Role">Role:</label>
+        <p id="Role">@Model.Role</p>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+    </div>
+</form>

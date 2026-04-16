@@ -1,0 +1,269 @@
+@{
+    ViewBag.Title = "Contact";
+}
+
+<head>
+    @section scripts {
+        <script src="~/Js/cart.js"></script>
+    }
+</head>
+
+@if (Session["Email"] != null)
+{
+    <div class="cart-icon">
+        <a href="@Url.Action("Index", "ShoppingCart")" class="cart-link">
+            <i class="fas fa-shopping-cart"></i>
+            <span class="cart-count">@ViewBag.CartCount</span>
+        </a>
+    </div>
+}
+
+<div class="page-wrapper">
+    <div class="hero-section">
+        <h1 class="display-title">Contact Us</h1>
+        <p class="display-subtitle">We would love to hear from you. Get in touch with our team.</p>
+    </div>
+
+    <div class="container main-content-box">
+        <div class="row gx-5">
+            <!-- Contact Cards -->
+            <div class="col-lg-5 mb-5 mb-lg-0">
+                <div class="contact-info-wrapper">
+                    <h3 class="mb-4 fw-bold" style="color: #1a1a2e; font-family: 'Playfair Display', serif;">Get In Touch</h3>
+                    <p class="text-muted mb-5">Have a question or just want to say hi? We'd love to hear from you. Drop us a line and we'll get back to you as soon as possible.</p>
+
+                    <div class="contact-card">
+                        <div class="icon-box"><i class="bi bi-geo-alt"></i></div>
+                        <div class="contact-text">
+                            <h5>Office Address</h5>
+                            <p>One Microsoft Way<br>Redmond, WA 98052-6399</p>
+                        </div>
+                    </div>
+
+                    <div class="contact-card">
+                        <div class="icon-box"><i class="bi bi-telephone"></i></div>
+                        <div class="contact-text">
+                            <h5>Phone</h5>
+                            <p>425.555.0100</p>
+                        </div>
+                    </div>
+
+                    <div class="contact-card">
+                        <div class="icon-box"><i class="bi bi-envelope"></i></div>
+                        <div class="contact-text">
+                            <h5>Email</h5>
+                            <p><a href="mailto:booknet.site@gmail.com">booknet.site@gmail.com</a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Form / Graphic Area -->
+            <div class="col-lg-7">
+                <div class="contact-form-card">
+                    <h3 class="mb-4 fw-bold text-center" style="color: #1a1a2e; font-family: 'Playfair Display', serif;">Send us a Message</h3>
+                    <form>
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <label class="form-label text-uppercase fw-bold text-muted small">Your Name</label>
+                                <input type="text" class="form-control custom-input" placeholder="John Doe" required>
+                            </div>
+                            <div class="col-md-6 mb-4">
+                                <label class="form-label text-uppercase fw-bold text-muted small">Email Address</label>
+                                <input type="email" class="form-control custom-input" placeholder="john@example.com" required>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label text-uppercase fw-bold text-muted small">Subject</label>
+                            <input type="text" class="form-control custom-input" placeholder="How can we help you?" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label text-uppercase fw-bold text-muted small">Message</label>
+                            <textarea class="form-control custom-input" rows="5" placeholder="Write your message here..." required></textarea>
+                        </div>
+                        <button type="button" class="btn btn-submit-contact w-100 py-3" onclick="alert('Message sent successfully!')">
+                            <i class="bi bi-send me-2"></i> Send Message
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* =========================================================
+       PREMIUM CONTACT PAGE DESIGN (Home Page Theme)
+       ========================================================= */
+    body {
+        background-color: #f3f2ec; /* matches var(--cream) */
+        font-family: 'Inter', sans-serif;
+        color: #2d2d2d;
+    }
+
+    .page-wrapper {
+        min-height: 100vh;
+        padding-bottom: 5rem;
+    }
+
+    .hero-section {
+        background: url('../../Images/Home/electronic_book.jpg') center/cover no-repeat;
+        padding: 8rem 2rem 10rem 2rem;
+        text-align: center;
+        color: #fff;
+        position: relative;
+    }
+
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(160deg, rgba(26,26,46,.82) 0%, rgba(0,150,183,.55) 100%);
+        z-index: 1;
+    }
+
+    .display-title, .display-subtitle {
+        position: relative;
+        z-index: 2;
+    }
+
+    .display-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 4rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        text-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    .display-subtitle {
+        font-size: 1.25rem;
+        color: rgba(255,255,255,0.9);
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .main-content-box {
+        margin-top: -6rem;
+        position: relative;
+        z-index: 10;
+    }
+
+    /* Left Side Info Cards */
+    .contact-info-wrapper {
+        background: #fff;
+        padding: 3rem;
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.05);
+        height: 100%;
+    }
+
+    .contact-card {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 2rem;
+        padding: 1.5rem;
+        border-radius: 16px;
+        background: #f8f9fa;
+        transition: transform 0.3s ease, background 0.3s ease;
+    }
+
+    .contact-card:hover {
+        background: #fff;
+        transform: translateX(10px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
+
+    .icon-box {
+        width: 60px;
+        height: 60px;
+        background: rgba(0, 180, 216, 0.1);
+        color: #00B4D8;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 1.5rem;
+        margin-right: 1.5rem;
+        flex-shrink: 0;
+    }
+
+    .contact-text h5 {
+        color: #1a1a2e;
+        font-weight: 700;
+        margin-bottom: 0.3rem;
+    }
+
+    .contact-text p {
+        color: #6c757d;
+        margin: 0;
+        line-height: 1.5;
+    }
+
+    .contact-text a {
+        color: #00B4D8;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .contact-text a:hover {
+        text-decoration: underline;
+    }
+
+    /* Right Side Form */
+    .contact-form-card {
+        background: #fff;
+        padding: 3.5rem;
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.08);
+    }
+
+    .custom-input {
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 12px;
+        padding: 1rem 1.2rem;
+        color: #333;
+        transition: all 0.3s ease;
+    }
+
+    .custom-input:focus {
+        background: #fff;
+        border-color: #00B4D8;
+        box-shadow: 0 0 0 4px rgba(0, 180, 216, 0.1);
+        outline: none;
+    }
+
+    .btn-submit-contact {
+        background: #1a1a2e;
+        color: #fff;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        border: none;
+    }
+
+    .btn-submit-contact:hover {
+        background: #00B4D8;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0, 180, 216, 0.3);
+    }
+
+    /* Cart FAB Global Fix */
+    .cart-link {
+        position: fixed; bottom: 30px; right: 30px;
+        background: #00B4D8; color: #fff;
+        width: 56px; height: 56px;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.3rem; margin: 0;
+        box-shadow: 0 5px 20px rgba(0, 180, 216, 0.4);
+        z-index: 1000;
+    }
+    .cart-count {
+        position: absolute; top: -5px; right: -5px;
+        background: #e63946; color: #fff; border-radius: 50%;
+        width: 22px; height: 22px; font-size: 0.75rem; font-weight: 700;
+        display: flex; align-items: center; justify-content: center;
+    }
+</style>

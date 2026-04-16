@@ -1,0 +1,306 @@
+@model _BookNeT_.Models.Users
+@{
+    ViewBag.Title = "Support";
+    Layout = "~/Views/Shared/_Tools.cshtml";
+}
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Bootstrap Files -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="~/Js/cart.js"></script>
+</head>
+@if (Session["Email"] != null)
+{
+    <div class="cart-icon">
+        <a href="@Url.Action("Index", "ShoppingCart")" class="cart-link">
+            <i class="fas fa-shopping-cart"></i>
+            <span class="cart-count">@ViewBag.CartCount</span>
+        </a>
+    </div>
+}
+<div class="support-container">
+    <div class="support-hero">
+        <h1 class="support-title"><i class="bi bi-headset"></i> Support Center</h1>
+        <p class="support-subtitle">We're here to help. Send us a message or reach out directly.</p>
+    </div>
+
+    <div class="support-content">
+        <!-- Contact Info Section -->
+        <div class="support-info-cards">
+            <div class="info-card">
+                <div class="icon-circle"><i class="bi bi-envelope-open"></i></div>
+                <h5>Email Us</h5>
+                <p>support@booknet.com</p>
+            </div>
+            <div class="info-card">
+                <div class="icon-circle"><i class="bi bi-telephone"></i></div>
+                <h5>Call Us</h5>
+                <p>+1 (555) 555-5555</p>
+            </div>
+        </div>
+
+        <!-- Contact Form Section -->
+        <div class="support-form-card">
+            <h4>Send a Message</h4>
+            <form id="supportForm" class="mt-4">
+                <div class="form-group mb-4">
+                    <label for="subject" class="form-label">How can we help?</label>
+                    <div class="select-wrapper">
+                        <select class="form-select custom-select" id="subject" name="subject" required>
+                            <option value="" disabled selected>Choose a Subject...</option>
+                            <option value="Technical Issue">🔧 Technical Issue</option>
+                            <option value="Account Problem">🔐 Account Problem</option>
+                            <option value="Payment Issue">💳 Payment Issue</option>
+                            <option value="Feedback/Suggestion">💡 Feedback / Suggestion</option>
+                            <option value="Other">❓ Other</option>
+                        </select>
+                        <i class="bi bi-chevron-down select-icon"></i>
+                    </div>
+                </div>
+
+                <div class="form-group mb-4">
+                    <label for="message" class="form-label">Message Details</label>
+                    <textarea class="form-control custom-textarea" id="message" name="message" rows="5" placeholder="Please describe your issue in detail..." required></textarea>
+                </div>
+
+                <button type="button" class="btn-submit-support" id="submitButton">
+                    <i class="bi bi-send"></i> Submit Request
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* =========================================================
+       PREMIUM SUPPORT PAGE DESIGN
+       ========================================================= */
+    .support-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 1rem;
+    }
+
+    .support-hero {
+        background: linear-gradient(135deg, #1a1a2e 0%, #2d2d4a 100%);
+        border-radius: 24px;
+        padding: 3rem 2rem;
+        color: #fff;
+        text-align: center;
+        box-shadow: 0 15px 35px rgba(26, 26, 46, 0.15);
+        margin-bottom: 2rem;
+    }
+
+    .support-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .support-subtitle {
+        color: rgba(255,255,255,0.8);
+        font-size: 1.1rem;
+        margin: 0;
+    }
+
+    .support-content {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 2rem;
+        margin-top: -3rem; /* overlap hero */
+        position: relative;
+        z-index: 10;
+        padding: 0 1rem;
+    }
+
+    @@media (max-width: 768px) {
+        .support-content {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Cards */
+    .info-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        border-radius: 20px;
+        padding: 2rem 1.5rem;
+        text-align: center;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.05);
+        margin-bottom: 1.5rem;
+        transition: transform 0.3s ease;
+    }
+
+    .info-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .info-card .icon-circle {
+        width: 60px;
+        height: 60px;
+        background: rgba(0, 180, 216, 0.1);
+        color: #00B4D8;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin: 0 auto 1rem auto;
+    }
+
+    .info-card h5 {
+        font-weight: 700;
+        color: #1a1a2e;
+        margin-bottom: 0.3rem;
+    }
+
+    .info-card p {
+        color: #6c757d;
+        margin: 0;
+        font-weight: 500;
+    }
+
+    /* Form Card */
+    .support-form-card {
+        background: #fff;
+        border-radius: 20px;
+        padding: 2.5rem;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.06);
+    }
+
+    .support-form-card h4 {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        color: #1a1a2e;
+        margin-bottom: 0;
+    }
+
+    .form-label {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #555;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .select-wrapper {
+        position: relative;
+    }
+
+    .select-icon {
+        position: absolute;
+        right: 1.2rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #888;
+        pointer-events: none;
+    }
+
+    .custom-select, .custom-textarea {
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 12px;
+        padding: 1rem 1.2rem;
+        color: #333;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        appearance: none; /* Hide default arrow */
+    }
+
+    .custom-select:focus, .custom-textarea:focus {
+        background: #fff;
+        border-color: #00B4D8;
+        box-shadow: 0 0 0 4px rgba(0, 180, 216, 0.1);
+        outline: none;
+    }
+
+    .btn-submit-support {
+        width: 100%;
+        background: #00B4D8;
+        color: #fff;
+        border: none;
+        padding: 1rem;
+        border-radius: 12px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 180, 216, 0.3);
+    }
+
+    .btn-submit-support:hover {
+        background: #0096b7;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 180, 216, 0.4);
+    }
+
+    /* Cart FAB in Profile */
+    .cart-link {
+        position: fixed; bottom: 30px; right: 30px;
+        background: #00B4D8; color: #fff;
+        width: 56px; height: 56px;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.3rem; margin: 0;
+        box-shadow: 0 5px 20px rgba(0, 180, 216, 0.4);
+        z-index: 1000;
+    }
+    .cart-count {
+        position: absolute; top: -5px; right: -5px;
+        background: #e63946; color: #fff; border-radius: 50%;
+        width: 22px; height: 22px; font-size: 0.75rem; font-weight: 700;
+        display: flex; align-items: center; justify-content: center;
+    }
+</style>
+
+<script>
+    $(document).ready(function () {
+        $("#submitButton").click(function () {
+            var messageContent = $("#message").val();
+            var subjectContent = $("#subject").val();
+
+            if (!messageContent) {
+                alert("Please enter a message.");
+                return;
+            }
+
+            if (!subjectContent) {
+                alert("Please select a subject.");
+                return;
+            }
+
+            $.ajax({
+                url: '/Profile/SubmitSupportRequest',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    message: messageContent,
+                    subject: subjectContent
+                }),
+                success: function (response) {
+                    if (response.success) {
+                        alert(response.message);
+                        $("#message").val('');
+                        $("#subject").val('');
+                    } else {
+                        alert("Error: " + response.message);
+                    }
+                },
+                error: function () {
+                    alert("There was an error sending your request.");
+                }
+            });
+        });
+    });
+</script>

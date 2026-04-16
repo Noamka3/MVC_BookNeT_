@@ -1,0 +1,29 @@
+﻿@{ ViewBag.Title = "Add Test User"; }
+
+<h2>Add Test User</h2>
+
+<p>
+    New user successfully added with fixed parameters!
+</p>
+
+<h4>User details added:</h4>
+<dl class="dl-horizontal">
+    <dt>First Name</dt>
+    <dd>John</dd>
+    <dt>Last Name</dt>
+    <dd>Doe</dd>
+    <dt>Email</dt>
+    <dd>john.doe@example.com</dd>
+    <dt>Phone</dt>
+    <dd>123-456-7890</dd>
+    <dt>Role</dt>
+    <dd>User</dd>
+    <dt>Age</dt>
+    <dd>30</dd>
+    <dt>Registration Date</dt>
+    <dd>@DateTime.Now.ToString("d")</dd>
+</dl>
+
+<p>
+    @Html.ActionLink("Return to the list of users", "Users")
+</p>

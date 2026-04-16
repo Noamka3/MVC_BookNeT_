@@ -1,0 +1,76 @@
+﻿@model _BookNeT_.Models.Users
+
+<form id="userEditsForm" action="@Url.Action("SetEdits", "Users")" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="UserID" value="@Model.UserID" />
+
+    <div class="mb-3">
+        <label for="FirstName" class="form-label">@Html.LabelFor(m => m.FirstName)</label>
+        @Html.TextBoxFor(m => m.FirstName, new { @class = "form-control text-primary", required = "required" })
+        @Html.ValidationMessageFor(m => m.FirstName, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="mb-3">
+        <label for="LastName" class="form-label">@Html.LabelFor(m => m.LastName)</label>
+        @Html.TextBoxFor(m => m.LastName, new { @class = "form-control text-primary", required = "required" })
+        @Html.ValidationMessageFor(m => m.LastName, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="mb-3">
+        <label for="Email" class="form-label">@Html.LabelFor(m => m.Email)</label>
+        @Html.TextBoxFor(m => m.Email, new { @class = "form-control text-primary", required = "required", type = "email" })
+        @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="mb-3">
+        <label for="Phone" class="form-label">@Html.LabelFor(m => m.Phone)</label>
+        @Html.TextBoxFor(m => m.Phone, new { @class = "form-control text-primary", maxlength = "10", type = "tel", pattern = "[0-9]{10}", title = "Phone number must contain exactly 10 digits", required = "required" })
+        @Html.ValidationMessageFor(m => m.Phone, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+    </div>
+</form>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // מציג הודעות הצלחה או שגיאה אם קיימות
+        const successMessage = "@TempData["SuccessMessage"]";
+        const errorMessage = "@TempData["ErrorMessage"]";
+
+        if (successMessage) {
+            alert(successMessage); 
+        }
+
+        if (errorMessage) {
+            alert(errorMessage); 
+        }
+        
+        document.getElementById('userEditsForm').addEventListener('submit', function (e) {
+            e.preventDefault(); 
+
+            const form = this; 
+            const phone = document.getElementById('Phone').value; // ערך מספר הטלפון
+            const email = document.getElementById('Email').value; // ערך האימייל
+            const userId = document.querySelector('input[name="UserID"]').value; // מזהה המשתמש
+            
+            fetch('/Users/ValidateUnique', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `phone=${encodeURIComponent(phone)}&email=${encodeURIComponent(email)}&userId=${encodeURIComponent(userId)}`
+            })
+                .then(response => {
+                    if (response.redirected) {
+                        window.location.href = response.url;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while validating the form. Please try again later.');
+                });
+        });
+    });
+
+</script>
+

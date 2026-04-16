@@ -1,0 +1,64 @@
+﻿.cart-icon {
+    position: fixed;
+    top: 80px; /* מתחת ל-NAVBAR */
+    right: 20px; /* מרחק מהקצה הימני */
+    z-index: 1100; /* מעל כל אלמנט אחר */
+}
+
+.cart-link {
+    display: inline-block;
+    padding: 8px; /* ריווח קטן יותר */
+    background: #007bff;
+    color: white;
+    border-radius: 50%;
+    width: 40px; /* גודל קטן יותר */
+    height: 40px; /* גודל קטן יותר */
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.cart-link:hover {
+    transform: translateY(-2px);
+    background: #0056b3;
+}
+
+.cart-link i {
+    font-size: 18px; /* גודל אייקון מותאם */
+    line-height: 20px; /* גובה טקסט */
+}
+
+
+.cart-count {
+    position: absolute;
+    top: -6px; /* התאמה לגודל האייקון */
+    right: -6px;
+    background: #dc3545;
+    color: white;
+    border-radius: 50%;
+    width: 20px; /* גודל קטן יותר */
+    height: 20px; /* גודל קטן יותר */
+    font-size: 11px;
+    line-height: 20px;
+    text-align: center;
+    font-weight: bold;
+}
+
+@keyframes pop {
+    0% {
+        transform: scale(0.8);
+    }
+
+    50% {
+        transform: scale(1.2);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.cart-count {
+    animation: pop 0.3s ease;
+}
