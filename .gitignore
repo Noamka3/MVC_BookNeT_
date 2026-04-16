@@ -1,5 +1,14 @@
 ## Visual Studio / ASP.NET MVC
 
+# Claude Code working directory
+.claude/
+
+# Visual Studio private folder
+.vs/
+
+# NuGet executable (download separately)
+nuget.exe
+
 # Build results
 [Dd]ebug/
 [Rr]elease/
