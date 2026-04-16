@@ -1,0 +1,56 @@
+## Visual Studio / ASP.NET MVC
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# NuGet packages
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+!packages/build/
+
+# Visual Studio files
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.userprefs
+
+# Sensitive config — never commit credentials
+**/Web.config
+**/web.config
+# Allow the template version (without secrets)
+!**/Web.config.template
+
+# Connection strings & secrets
+**/ConnectionStrings.config
+**/AppSettings.config
+**/secrets.json
+**/*.pfx
+**/*.p12
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+
+# SQL Server files
+*.mdf
+*.ldf
+*.ndf
