@@ -1,65 +1,171 @@
-## Visual Studio / ASP.NET MVC
+## Visual Studio / ASP.NET MVC (.NET Framework)
+## Merged from Visual Studio template + project-specific rules
 
-# Claude Code working directory
-.claude/
-
-# Visual Studio private folder
-.vs/
-
-# NuGet executable (download separately)
-nuget.exe
-
-# Build results
-[Dd]ebug/
-[Rr]elease/
-x64/
-x86/
-[Aa][Rr][Mm]/
-[Aa][Rr][Mm]64/
-bld/
-[Bb]in/
-[Oo]bj/
-[Ll]og/
-[Ll]ogs/
-
-# NuGet packages
-*.nupkg
-*.snupkg
-.nuget/
-packages/
-!packages/build/
-
-# Visual Studio files
-.vs/
-*.user
-*.suo
-*.userosscache
-*.sln.docstates
-*.userprefs
-
-# Sensitive config — never commit credentials
+# ── Sensitive config — never commit credentials ──────────────────────────────
 **/Web.config
 **/web.config
 # Allow the template version (without secrets)
 !**/Web.config.template
-
-# Connection strings & secrets
 **/ConnectionStrings.config
 **/AppSettings.config
 **/secrets.json
 **/*.pfx
 **/*.p12
 
-# Windows
+# ── Build results ─────────────────────────────────────────────────────────────
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+[Ll]og/
+[Ll]ogs/
+
+# ── NuGet ─────────────────────────────────────────────────────────────────────
+*.nupkg
+*.snupkg
+.nuget/
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+*.nuget.props
+*.nuget.targets
+nuget.exe
+
+# ── Visual Studio files ───────────────────────────────────────────────────────
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+*.rsuser
+
+# Mono
+mono_crash.*
+
+# MSTest / NUnit / test results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+*.VisualState.xml
+TestResult.xml
+nunit-*.xml
+
+# Files built by Visual Studio
+*_i.c
+*_p.c
+*_h.h
+*.ilk
+*.meta
+*.obj
+*.iobj
+*.pch
+*.pdb
+*.ipdb
+*.pgc
+*.pgd
+*.rsp
+*.sbr
+*.tlb
+*.tli
+*.tlh
+*.tmp
+*.tmp_proj
+*_wpftmp.csproj
+*.log
+*.vspscc
+*.vssscc
+.builds
+*.pidb
+*.svclog
+*.scc
+
+# Visual Studio profiler / trace
+*.psess
+*.vsp
+*.vspx
+*.sap
+*.e2e
+
+# Visual Studio cache
+*.[Cc]ache
+!?*.[Cc]ache/
+
+# ReSharper
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+
+# Coverage
+coverage*.json
+coverage*.xml
+coverage*.info
+*.coverage
+*.coveragexml
+
+# Publish / Azure
+*.[Pp]ublish.xml
+*.azurePubxml
+*.pubxml
+*.publishproj
+PublishScripts/
+csx/
+*.build.csdef
+ecf/
+rcf/
+
+# ── SQL Server files ──────────────────────────────────────────────────────────
+*.mdf
+*.ldf
+*.ndf
+
+# ── Node / npm ────────────────────────────────────────────────────────────────
+node_modules/
+.ntvs_analysis.dat
+
+# ── Python (PTVS) ─────────────────────────────────────────────────────────────
+__pycache__/
+*.pyc
+
+# ── JetBrains Rider ───────────────────────────────────────────────────────────
+# (inner .idea/.gitignore handles most; exclude the folder itself)
+.idea/
+
+# ── Claude Code ───────────────────────────────────────────────────────────────
+.claude/
+
+# ── Windows ───────────────────────────────────────────────────────────────────
 Thumbs.db
 ehthumbs.db
 Desktop.ini
 $RECYCLE.BIN/
+~$*
 
-# macOS
+# ── macOS ─────────────────────────────────────────────────────────────────────
 .DS_Store
 
-# SQL Server files
-*.mdf
-*.ldf
-*.ndf
+# ── Misc ──────────────────────────────────────────────────────────────────────
+BenchmarkDotNet.Artifacts/
+Generated\ Files/
+ScaffoldingReadMe.txt
+StyleCopReport.xml
+ClientBin/
+_UpgradeReport_Files/
+Backup*/
+UpgradeLog*.XML
+UpgradeLog*.htm
+ServiceFabricBackup/
+*.rptproj.bak
+FakesAssemblies/
+MigrationBackup/
+.localhistory/
+.mfractor/
+healthchecksdb
+FodyWeavers.xsd
